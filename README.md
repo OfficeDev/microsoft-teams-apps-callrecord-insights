@@ -1,14 +1,32 @@
-# Project
+# Microsoft Teams Call Record Insights
 
-> This repo has been populated by an initial template to help get you started. Please
-> make sure to update the content to build a great experience for community-building.
+## What is Call Record Insights?
 
-As the maintainer of this project, please make a few updates:
+Call Record Insights is a turnkey application template for retrieving, parsing, flattening, and storing Microsoft Teams Call Records retrieved via Graph API.
 
-- Improving this README.MD file to provide a great experience
-- Updating SUPPORT.MD with content about this project's support experience
-- Understanding the security reporting process in SECURITY.MD
-- Remove this section from the README
+This application enables you to retrieve your tenant's call records, parse them into a meaningful format and store them in Cosmos DB and Kusto without writing any code yourself.
+
+Because this solution uses Cosmos DB it is highly scalable and because it uses Kusto it is very friendly to application development and deep data analysis.
+
+The solution is fully deployed within your own tenant. All data processing and data storage is done in whichever tenant you deploy the application.
+
+1. [High Level Architecture](./docs/high-level-architecture.md)
+
+1. [Requirements](./docs/requirements.md)
+
+1. [Deployment](./docs/deployment.md)
+
+1. [Validation & Verification](./docs/deployment.md#deployment-validation--verification)
+
+1. [Admin Functions](./docs/admin-functions.md)
+
+1. [CosmosDB, Kusto Functions, Views and Queries](./docs/data-explorer-functions-views-queries.md)
+
+1. [Configuration Settings](./docs/function-configuration-settings.md)
+
+1. [Multi Tenant](./docs/multi-tenant-deployment.md)
+
+1. [Troubleshooting](./docs/troubleshooting.md)
 
 ## Contributing
 
