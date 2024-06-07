@@ -26,7 +26,8 @@ param(
     [ValidateSet('australiacentral', 'australiaeast', 'australiasoutheast', 'brazilsouth', 'canadacentral', 'canadaeast', 'centralindia', 'centralus', 'eastasia',
         'eastus', 'eastus2', 'francecentral', 'germanywestcentral', 'japaneast', 'japanwest', 'koreacentral', 'koreasouth', 'northcentralus', 'northeurope', 'norwayeast',
         'polandcentral', 'qatarcentral', 'southafricanorth', 'southcentralus', 'southeastasia', 'southindia', 'swedencentral', 'switzerlandnorth', 'uaenorth', 'uksouth',
-        'ukwest', 'westcentralus', 'westeurope', 'westindia', 'westus', 'westus2', 'westus3')]
+        'ukwest', 'westcentralus', 'westeurope', 'westindia', 'westus', 'westus2', 'westus3',
+        'usgovvirginia', 'usgovarizona', 'usgovtexas', 'usgoviowa', 'usdodcentral', 'usdodeast')]
     [string]
     $Location = 'westus',
 
@@ -82,6 +83,12 @@ if (!(Get-Command -Name az -CommandType Application -ErrorAction SilentlyContinu
     return
 }
 
+$GraphEndpoint = switch ($Location) {
+    { $_ -in @('usgovvirginia', 'usgovarizona', 'usgovtexas', 'usgoviowa') } { 'graph.microsoft.us' }
+    { $_ -in @('usdodcentral','usdodeast') } { 'dod-graph.microsoft.us' }
+    default { 'graph.microsoft.com' }
+}
+
 $AzCommands = @{
     getdeployment             = { az deployment group show --resource-group $args[0] --name $args[1] --query properties 2>&1 }
     deploybicep               = {
@@ -128,7 +135,7 @@ $AzCommands = @{
     getspnobjectid            = { az ad sp list --spn $args[0] --query "[].id" 2>&1 }
     getresourcegroup          = { az group show --name $args[0] 2>&1 }
     createresourcegroup       = { az group create --name $args[0] --location $args[1] 2>&1 }
-    getaadapproleassignments  = { az rest --method get --url "https://graph.microsoft.com/v1.0/servicePrincipals/$($args[0])/appRoleAssignments" 2>&1 }
+    getaadapproleassignments  = { az rest --method get --url "https://${GraphEndpoint}/v1.0/servicePrincipals/$($args[0])/appRoleAssignments" 2>&1 }
     addaadapproleassignment   = {
         $request = @{
             principalId = $args[0]
@@ -136,7 +143,7 @@ $AzCommands = @{
             appRoleId   = $args[2]
         }
         $body = ($request | ConvertTo-Json -Compress).Replace('"', '\"')
-        az rest --method post --url "https://graph.microsoft.com/v1.0/servicePrincipals/$($args[0])/appRoleAssignments" --body "$body" 2>&1
+        az rest --method post --url "https://${GraphEndpoint}/v1.0/servicePrincipals/$($args[0])/appRoleAssignments" --body "$body" 2>&1
     }
     getwebappdeployment       = { az webapp log deployment show --resource-group $args[0] --name $args[1] 2>&1 }
     getmasterkey              = { az functionapp keys list --resource-group $args[0] --name $args[1] --query masterKey 2>&1 }

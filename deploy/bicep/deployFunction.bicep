@@ -344,6 +344,15 @@ var GraphNotificationUrl = useGraphEventHubManagedIdentity /*
 */    ? 'EventHub:${graphKeyVault::graphEventHubConnectionString.properties.secretUri}' /*
 */    : 'EventHub:${keyvault::graphEventHubConnectionString.properties.secretUri}'
 
+var GraphEndpoints = {
+  usgovvirginia : 'graph.microsoft.us'
+  usgovarizona : 'graph.microsoft.us'
+  usgovtexas : 'graph.microsoft.us'
+  usgoviowa : 'graph.microsoft.us'
+  usdodcentral : 'dod-graph.microsoft.us'
+  usdodeast : 'dod-graph.microsoft.us'
+}
+
 resource functionApp 'Microsoft.Web/sites@2022-09-01' = {
   name: '${baseResourceName}-function'
   location: location
@@ -362,6 +371,7 @@ resource functionApp 'Microsoft.Web/sites@2022-09-01' = {
         // Graph Subscription Manager Configuration
         { key: 'GraphSubscription__NotificationUrl', value: GraphNotificationUrl }
         { key: 'GraphSubscription__Tenants', value: tenantDomain }
+        { key: 'GraphSubscription__Endpoint', value: contains(GraphEndpoints, location) ? GraphEndpoints[location] : 'graph.microsoft.com' }
 
         { key: 'CallRecordInsightsDb__EndpointUri', value: cosmosAccount.properties.documentEndpoint }
         { key: 'CallRecordInsightsDb__DatabaseName', value: cosmosAccount::database.properties.resource.id }

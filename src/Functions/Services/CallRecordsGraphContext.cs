@@ -514,7 +514,7 @@ namespace CallRecordInsights.Services
         private string DefaultTenantFactory()
         {
             var token = credential.GetToken(
-                    new TokenRequestContext(new[] { $"https://{graphOptions.Endpoint}/.default" }),
+                    new TokenRequestContext(new[] { "00000003-0000-0000-c000-000000000000/.default" }),
                     default)
                 .Token;
             var tenantId = new JwtSecurityToken(token)

@@ -23,7 +23,7 @@ namespace CallRecordInsights.Services
         private readonly GraphServiceClientOptions _defaultAuthenticationOptions;
         private readonly TokenCredential _credential;
         private readonly ILogger<AzureIdentityMultiTenantGraphAuthenticationProvider> logger;
-        private static readonly string[] AppOnlyScopes = new[] { "https://graph.microsoft.com/.default" };
+        private static readonly string[] AppOnlyScopes = new[] { "00000003-0000-0000-c000-000000000000/.default" };
 
         public AzureIdentityMultiTenantGraphAuthenticationProvider(
             TokenCredential credential,
