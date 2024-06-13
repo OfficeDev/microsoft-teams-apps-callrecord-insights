@@ -22,12 +22,14 @@ param existingKustoClusterName string = 'NOEXISTINGKUSTOCLUSTER'
 @description('The type of identity to assign to the cluster. SystemAssigned is the default. None will not assign an identity. UserAssigned will assign the identity specified in the identity parameter.')
 param identity string = 'SystemAssigned'
 
+var isGovCloud = startsWith(location, 'usgov') || startsWith(location, 'usdod')
+
 // T-Shirt sizing
 var clusterConfigurations = {
   DevTest: {
     cluster: {
       sku: {
-        name: 'Dev(No SLA)_Standard_E2a_v4'
+        name: isGovCloud ? 'Dev(No SLA)_Standard_D11_v2' : 'Dev(No SLA)_Standard_E2a_v4'
         tier: 'Basic'
         capacity: 1
       }
@@ -45,7 +47,7 @@ var clusterConfigurations = {
   Production: {
     cluster: {
       sku: {
-        name: 'Standard_E2ads_v5'
+        name: isGovCloud ? 'Standard_D11_v2' : 'Standard_E2ads_v5'
         tier: 'Standard'
         capacity: 2
       }
@@ -58,11 +60,11 @@ var clusterConfigurations = {
       }
     }
   }
-  // this will eventually be locked down netowrk wise, but for now, just using the same as production
+  // this will eventually be locked down network wise, but for now, just using the same as production
   RestrictedProduction: {
     cluster: {
       sku: {
-        name: 'Standard_E2ads_v5'
+        name: isGovCloud ? 'Standard_D11_v2' : 'Standard_E2ads_v5'
         tier: 'Standard'
         capacity: 2
       }
