@@ -348,7 +348,6 @@ var GraphEndpoints = {
   usgovvirginia : 'graph.microsoft.us'
   usgovarizona : 'graph.microsoft.us'
   usgovtexas : 'graph.microsoft.us'
-  usgoviowa : 'graph.microsoft.us'
   usdodcentral : 'dod-graph.microsoft.us'
   usdodeast : 'dod-graph.microsoft.us'
 }
@@ -390,6 +389,9 @@ resource functionApp 'Microsoft.Web/sites@2022-09-01' = {
         { key: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING', value: '@Microsoft.KeyVault(VaultName=${keyvault.name};SecretName=${keyvault::storageAccountConnectionString.name})' }
         { key: 'WEBSITE_CONTENTSHARE', value: toLower(functionApp.name) }
       ], o => o.key, o => o.value)
+      dependsOn: [
+        functionAppKeyVaultRoleAssignment // Ensure the function app has access to the key vault before reading referenced secrets
+      ]
   }
 }
 
