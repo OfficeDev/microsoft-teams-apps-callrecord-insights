@@ -388,6 +388,7 @@ resource functionApp 'Microsoft.Web/sites@2022-09-01' = {
         { key: 'FUNCTIONS_WORKER_RUNTIME', value: 'dotnet' }
         { key: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING', value: '@Microsoft.KeyVault(VaultName=${keyvault.name};SecretName=${keyvault::storageAccountConnectionString.name})' }
         { key: 'WEBSITE_CONTENTSHARE', value: toLower(functionApp.name) }
+        { key: 'SCM_COMMAND_IDLE_TIMEOUT', value: '1800' }
       ], o => o.key, o => o.value)
       dependsOn: [
         functionAppKeyVaultRoleAssignment // Ensure the function app has access to the key vault before reading referenced secrets
