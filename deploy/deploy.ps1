@@ -141,6 +141,7 @@ $AzCommands = @{
     getazoid                  = { az ad signed-in-user show --query id 2>&1 }
     getaztenant               = { az account show --query tenantId 2>&1 }
     getspnobjectid            = { az ad sp list --spn $args[0] --query "[].id" 2>&1 }
+    createspn                 = { az ad sp create --id $args[0] --query "[].id" 2>&1 }
     getresourcegroup          = { az group show --name $args[0] 2>&1 }
     createresourcegroup       = { az group create --name $args[0] --location $args[1] 2>&1 }
     getaadapproleassignments  = { az rest --method get --url "https://${GraphEndpoint}/v1.0/servicePrincipals/$($args[0])/appRoleAssignments" 2>&1 }
@@ -410,6 +411,15 @@ if ($Errors) {
     Write-Error "Failed to get the SPN object id for the Microsoft Graph Change Tracking app. Please ensure you have access to the tenant and try again."
     $Errors | ForEach-Object { Write-Error -ErrorRecord $_ }
     return
+}
+if ($null -eq $GraphChangeTrackingSPNObjectId) { 
+    Write-Host "Creating SPN for the Microsoft Graph Change Tracking app."
+    $Errors, $GraphChangeTrackingSPNObjectId = TryExecuteMethod createspn '0bf30f3b-4a52-48df-9a82-234910c4a086'
+    if ($Errors) {
+        Write-Error "Failed to create the SPN object id for the Microsoft Graph Change Tracking app. Please ensure you have access to the tenant and try again."
+        $Errors | ForEach-Object { Write-Error -ErrorRecord $_ }
+        return
+    }
 }
 if ($GraphChangeTrackingSPNObjectId -isnot [string]) { $GraphChangeTrackingSPNObjectId = $GraphChangeTrackingSPNObjectId[0] }
 Write-Host "SPN object id for the Microsoft Graph Change Tracking app is '$GraphChangeTrackingSPNObjectId'." -ForegroundColor Green
