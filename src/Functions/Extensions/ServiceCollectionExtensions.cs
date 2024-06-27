@@ -118,6 +118,10 @@ namespace CallRecordInsights.Extensions
                 ManagedIdentityClientId = identityOptions?.UserAssignedManagedIdentityClientId,
                 TenantId = identityOptions?.TenantId,
             };
+
+            if (identityOptions?.Authority != null)
+                defaultAzureCredentialOptions.AuthorityHost = new Uri(identityOptions.Authority);
+
             defaultAzureCredentialOptions.AdditionallyAllowedTenants.Add("*");
 
             var clientCertificateCredentialOptions = new ClientCertificateCredentialOptions();
