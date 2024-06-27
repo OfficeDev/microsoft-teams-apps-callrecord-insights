@@ -41,9 +41,10 @@ namespace CallRecordInsights.Extensions
             this IServiceCollection services,
             string sectionName = "GraphSubscription")
         {
-            return services.AddMicrosoftGraphAsApplication()
+            return services
                 .AddScoped(serviceProvider => new CallRecordsGraphOptions(
                                serviceProvider.GetRequiredService<IConfiguration>().GetSection(sectionName)))
+                .AddMicrosoftGraphAsApplication()
                 .AddScoped<ICallRecordsGraphContext,CallRecordsGraphContext>();
         }
 
@@ -80,7 +81,10 @@ namespace CallRecordInsights.Extensions
             return services
                 .AddTokenCredential(sectionName)
                 .AddAzureMultiTenantGraphAuthenticationProvider()
-                .AddScoped<GraphServiceClient, GraphServiceClient>(sp => new GraphServiceClient(sp.GetRequiredService<IAuthenticationProvider>()));
+                .AddScoped<GraphServiceClient, GraphServiceClient>(sp => 
+                    new GraphServiceClient(sp.GetRequiredService<IAuthenticationProvider>(), 
+                    baseUrl: $"https://{sp.GetRequiredService<CallRecordsGraphOptions>().Endpoint}/v1.0")
+                );
         }
 
 
