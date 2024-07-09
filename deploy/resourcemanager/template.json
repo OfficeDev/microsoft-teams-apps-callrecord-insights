@@ -4,8 +4,8 @@
   "metadata": {
     "_generator": {
       "name": "bicep",
-      "version": "0.25.3.34343",
-      "templateHash": "2662921431620975723"
+      "version": "0.28.1.47646",
+      "templateHash": "17485759625502517747"
     }
   },
   "parameters": {
@@ -136,8 +136,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.25.3.34343",
-              "templateHash": "5023612052478866940"
+              "version": "0.28.1.47646",
+              "templateHash": "2791479325930176374"
             }
           },
           "parameters": {
@@ -190,11 +190,12 @@
             }
           },
           "variables": {
+            "isGovCloud": "[or(startsWith(parameters('location'), 'usgov'), startsWith(parameters('location'), 'usdod'))]",
             "clusterConfigurations": {
               "DevTest": {
                 "cluster": {
                   "sku": {
-                    "name": "Dev(No SLA)_Standard_E2a_v4",
+                    "name": "[if(variables('isGovCloud'), 'Dev(No SLA)_Standard_D11_v2', 'Dev(No SLA)_Standard_E2a_v4')]",
                     "tier": "Basic",
                     "capacity": 1
                   },
@@ -212,7 +213,7 @@
               "Production": {
                 "cluster": {
                   "sku": {
-                    "name": "Standard_E2ads_v5",
+                    "name": "[if(variables('isGovCloud'), 'Standard_D11_v2', 'Standard_E2ads_v5')]",
                     "tier": "Standard",
                     "capacity": 2
                   },
@@ -228,7 +229,7 @@
               "RestrictedProduction": {
                 "cluster": {
                   "sku": {
-                    "name": "Standard_E2ads_v5",
+                    "name": "[if(variables('isGovCloud'), 'Standard_D11_v2', 'Standard_E2ads_v5')]",
                     "tier": "Standard",
                     "capacity": 2
                   },
@@ -436,8 +437,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.25.3.34343",
-              "templateHash": "994269997504341877"
+              "version": "0.28.1.47646",
+              "templateHash": "15512555221821624675"
             }
           },
           "parameters": {
@@ -645,8 +646,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.25.3.34343",
-              "templateHash": "7928089187257027743"
+              "version": "0.28.1.47646",
+              "templateHash": "12813007253047072709"
             }
           },
           "parameters": {
@@ -730,54 +731,97 @@
                 "52.159.23.209/32",
                 "52.159.17.84/32",
                 "13.78.204.0/32",
+                "52.148.24.136/32",
+                "52.148.27.39/32",
                 "52.147.213.251/32",
                 "52.147.213.181/32",
                 "20.127.53.125/32",
+                "40.76.162.99/32",
+                "40.76.162.42/32",
                 "70.37.95.92/32",
                 "70.37.95.11/32",
                 "70.37.92.195/32",
+                "70.37.93.191/32",
+                "70.37.90.219/32",
                 "20.9.36.45/32",
                 "20.9.35.166/32",
                 "20.9.36.128/32",
+                "20.9.37.73/32",
+                "20.9.37.76/32",
                 "20.96.21.67/32",
                 "20.69.245.215/32",
                 "104.46.117.15/32",
+                "20.96.21.98/32",
+                "20.96.21.115/32",
                 "137.135.11.161/32",
                 "137.135.11.116/32",
                 "20.253.156.113/32",
+                "137.135.11.222/32",
+                "137.135.11.250/32",
                 "52.159.107.50/32",
                 "52.159.107.4/32",
                 "52.159.124.33/32",
+                "52.159.109.205/32",
+                "52.159.102.72/32",
                 "20.98.68.182/32",
                 "20.98.68.57/32",
                 "20.98.68.200/32",
+                "20.98.68.203/32",
+                "20.98.68.218/32",
                 "20.171.81.121/32",
                 "20.25.189.138/32",
                 "20.171.82.192/32",
+                "20.171.83.146/32",
+                "20.171.83.157/32",
                 "52.142.114.29/32",
                 "52.142.115.31/32",
                 "20.223.139.245/32",
+                "51.104.159.213/32",
+                "51.104.159.181/32",
                 "51.124.75.43/32",
                 "51.124.73.177/32",
                 "104.40.209.182/32",
+                "51.138.90.7/32",
+                "51.138.90.52/32",
                 "20.199.102.157/32",
                 "20.199.102.73/32",
                 "20.216.150.67/32",
+                "20.111.9.46/32",
+                "20.111.9.77/32",
+                "13.87.81.123/32",
+                "13.87.81.35/32",
+                "20.90.99.1/32",
+                "13.87.81.133/32",
+                "13.87.81.141/32",
                 "20.91.212.211/32",
                 "20.91.212.136/32",
                 "20.91.213.57/32",
+                "20.91.208.88/32",
+                "20.91.209.147/32",
                 "20.44.210.83/32",
                 "20.44.210.146/32",
                 "20.212.153.162/32",
+                "52.148.115.48/32",
+                "52.148.114.238/32",
                 "40.80.232.177/32",
                 "40.80.232.118/32",
                 "52.231.196.24/32",
+                "40.80.233.14/32",
+                "40.80.239.196/32",
                 "20.48.12.75/32",
                 "20.48.11.201/32",
                 "20.89.108.161/32",
+                "20.48.14.35/32",
+                "20.48.15.147/32",
                 "104.215.13.23/32",
                 "104.215.6.169/32",
-                "20.89.240.165/32"
+                "20.89.240.165/32",
+                "104.215.18.55/32",
+                "104.215.12.254/32",
+                "20.20.32.0/19",
+                "20.190.128.0/18",
+                "20.231.128.0/19",
+                "40.126.0.0/18"
               ],
               "AzureUSGovernment": [
                 "52.244.33.45/32",
@@ -795,7 +839,9 @@
                 "52.182.32.51/32",
                 "52.182.32.143/32",
                 "52.181.24.199/32",
-                "52.181.24.220/32"
+                "52.181.24.220/32",
+                "20.140.232.0/23",
+                "52.126.194.0/23"
               ],
               "AzureChinaCloud": [
                 "42.159.72.35/32",
@@ -805,7 +851,12 @@
                 "40.125.138.23/32",
                 "40.125.136.69/32",
                 "40.72.155.199/32",
-                "40.72.155.216/32"
+                "40.72.155.216/32",
+                "40.72.70.0/23",
+                "52.130.2.32/27",
+                "52.130.3.64/27",
+                "52.130.17.192/27",
+                "52.130.18.32/27"
               ]
             },
             "tenantId": "[subscription().tenantId]",
@@ -1000,6 +1051,13 @@
               "Custom": {}
             },
             "graphChangeNotificationSubnets": "[variables('$fxv#0')]",
+            "GraphEndpoints": {
+              "usgovvirginia": "graph.microsoft.us",
+              "usgovarizona": "graph.microsoft.us",
+              "usgovtexas": "graph.microsoft.us",
+              "usdodcentral": "dod-graph.microsoft.us",
+              "usdodeast": "dod-graph.microsoft.us"
+            },
             "roleDefinitionId": {
               "StorageAccount": {
                 "Contributor": "17d1049b-9a84-46fb-8f53-869881c3d3ab",
@@ -1119,26 +1177,25 @@
               ]
             },
             {
-              "condition": "[not(parameters('useGraphEventHubManagedIdentity'))]",
               "type": "Microsoft.EventHub/namespaces/eventhubs/authorizationRules",
               "apiVersion": "2022-10-01-preview",
-              "name": "[format('{0}/{1}/{2}', parameters('baseResourceName'), 'graphevents', 'sender')]",
+              "name": "[format('{0}/{1}/{2}', if(greaterOrEquals(length(parameters('baseResourceName')), 6), parameters('baseResourceName'), format('{0}{1}', parameters('baseResourceName'), substring(uniqueString(parameters('baseResourceName')), 0, sub(6, length(parameters('baseResourceName')))))), 'graphevents', 'sender')]",
               "properties": {
                 "rights": [
                   "Send"
                 ]
               },
               "dependsOn": [
-                "[resourceId('Microsoft.EventHub/namespaces/eventhubs', parameters('baseResourceName'), 'graphevents')]"
+                "[resourceId('Microsoft.EventHub/namespaces/eventhubs', if(greaterOrEquals(length(parameters('baseResourceName')), 6), parameters('baseResourceName'), format('{0}{1}', parameters('baseResourceName'), substring(uniqueString(parameters('baseResourceName')), 0, sub(6, length(parameters('baseResourceName')))))), 'graphevents')]"
               ]
             },
             {
               "type": "Microsoft.EventHub/namespaces/eventhubs",
               "apiVersion": "2022-10-01-preview",
-              "name": "[format('{0}/{1}', parameters('baseResourceName'), 'graphevents')]",
+              "name": "[format('{0}/{1}', if(greaterOrEquals(length(parameters('baseResourceName')), 6), parameters('baseResourceName'), format('{0}{1}', parameters('baseResourceName'), substring(uniqueString(parameters('baseResourceName')), 0, sub(6, length(parameters('baseResourceName')))))), 'graphevents')]",
               "properties": "[variables('configurations')[parameters('deploymentType')].eventHub.eventhubs.properties]",
               "dependsOn": [
-                "[resourceId('Microsoft.EventHub/namespaces', parameters('baseResourceName'))]",
+                "[resourceId('Microsoft.EventHub/namespaces', if(greaterOrEquals(length(parameters('baseResourceName')), 6), parameters('baseResourceName'), format('{0}{1}', parameters('baseResourceName'), substring(uniqueString(parameters('baseResourceName')), 0, sub(6, length(parameters('baseResourceName')))))))]",
                 "[resourceId('Microsoft.Network/virtualNetworks/subnets', format('vnet-{0}', resourceGroup().name), 'fnapp-subnet')]"
               ]
             },
@@ -1146,7 +1203,7 @@
               "condition": "[startsWith(parameters('deploymentType'), 'Restricted')]",
               "type": "Microsoft.EventHub/namespaces/networkRuleSets",
               "apiVersion": "2022-10-01-preview",
-              "name": "[format('{0}/{1}', parameters('baseResourceName'), 'default')]",
+              "name": "[format('{0}/{1}', if(greaterOrEquals(length(parameters('baseResourceName')), 6), parameters('baseResourceName'), format('{0}{1}', parameters('baseResourceName'), substring(uniqueString(parameters('baseResourceName')), 0, sub(6, length(parameters('baseResourceName')))))), 'default')]",
               "properties": {
                 "publicNetworkAccess": "SecuredByPerimeter",
                 "trustedServiceAccessEnabled": true,
@@ -1161,7 +1218,7 @@
                 "ipRules": "[map(variables('graphChangeNotificationSubnets')[environment().name], lambda('s', createObject('action', 'Allow', 'ipMask', lambdaVariables('s'))))]"
               },
               "dependsOn": [
-                "[resourceId('Microsoft.EventHub/namespaces', parameters('baseResourceName'))]",
+                "[resourceId('Microsoft.EventHub/namespaces', if(greaterOrEquals(length(parameters('baseResourceName')), 6), parameters('baseResourceName'), format('{0}{1}', parameters('baseResourceName'), substring(uniqueString(parameters('baseResourceName')), 0, sub(6, length(parameters('baseResourceName')))))))]",
                 "[resourceId('Microsoft.Network/virtualNetworks/subnets', format('vnet-{0}', resourceGroup().name), 'fnapp-subnet')]"
               ]
             },
@@ -1169,12 +1226,15 @@
               "type": "Microsoft.Web/sites/config",
               "apiVersion": "2022-09-01",
               "name": "[format('{0}/{1}', format('{0}-function', parameters('baseResourceName')), 'appsettings')]",
-              "properties": "[toObject(createArray(createObject('key', 'RenewSubscriptionScheduleCron', 'value', '0 0 */2 * * *'), createObject('key', 'CallRecordsQueueConnection__queueServiceUri', 'value', reference(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2022-09-01').primaryEndpoints.queue), createObject('key', 'CallRecordsQueueConnection__credential', 'value', 'managedidentity'), createObject('key', 'CallRecordsToDownloadQueueName', 'value', variables('downloadQueueName')), createObject('key', 'GraphSubscription__NotificationUrl', 'value', if(parameters('useGraphEventHubManagedIdentity'), format('EventHub:{0}/eventhubname/{1}', reference(resourceId('Microsoft.EventHub/namespaces', parameters('baseResourceName')), '2022-10-01-preview').serviceBusEndpoint, 'graphevents'), if(parameters('useSeparateKeyVaultForGraph'), format('EventHub:{0}', reference(resourceId('Microsoft.KeyVault/vaults/secrets', variables('graphKeyVaultName'), 'GraphEventHubConnectionString'), '2023-02-01').secretUri), format('EventHub:{0}', reference(resourceId('Microsoft.KeyVault/vaults/secrets', variables('keyvaultName'), 'GraphEventHubConnectionString'), '2023-02-01').secretUri)))), createObject('key', 'GraphSubscription__Tenants', 'value', variables('tenantDomain')), createObject('key', 'CallRecordInsightsDb__EndpointUri', 'value', reference(resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('cosmosAccountName')), '2023-09-15').documentEndpoint), createObject('key', 'CallRecordInsightsDb__DatabaseName', 'value', reference(resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', parameters('cosmosAccountName'), parameters('callRecordsDatabaseName')), '2023-09-15').resource.id), createObject('key', 'CallRecordInsightsDb__ProcessedContainerName', 'value', reference(resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers', parameters('cosmosAccountName'), parameters('callRecordsDatabaseName'), parameters('callRecordsContainerName')), '2023-09-15').resource.id), createObject('key', 'GraphNotificationEventHubName', 'value', 'graphevents'), createObject('key', 'EventHubConnection__fullyQualifiedNamespace', 'value', split(split(reference(resourceId('Microsoft.EventHub/namespaces', parameters('baseResourceName')), '2022-10-01-preview').serviceBusEndpoint, '://')[1], ':')[0]), createObject('key', 'EventHubConnection__credential', 'value', 'managedidentity'), createObject('key', 'AzureWebJobsStorage__accountName', 'value', variables('storageAccountName')), createObject('key', 'AzureWebJobsSecretStorageType', 'value', 'keyvault'), createObject('key', 'AzureWebJobsSecretStorageKeyVaultUri', 'value', reference(resourceId('Microsoft.KeyVault/vaults', variables('keyvaultName')), '2023-02-01').vaultUri), createObject('key', 'FUNCTIONS_EXTENSION_VERSION', 'value', '~4'), createObject('key', 'FUNCTIONS_WORKER_RUNTIME', 'value', 'dotnet'), createObject('key', 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING', 'value', format('@Microsoft.KeyVault(VaultName={0};SecretName={1})', variables('keyvaultName'), 'StorageAccountConnectionString')), createObject('key', 'WEBSITE_CONTENTSHARE', 'value', toLower(format('{0}-function', parameters('baseResourceName'))))), lambda('o', lambdaVariables('o').key), lambda('o', lambdaVariables('o').value))]",
+              "properties": "[toObject(flatten(createArray(createArray(createObject('key', 'RenewSubscriptionScheduleCron', 'value', '0 0 */2 * * *'), createObject('key', 'CallRecordsQueueConnection__queueServiceUri', 'value', reference(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2022-09-01').primaryEndpoints.queue), createObject('key', 'CallRecordsQueueConnection__credential', 'value', 'managedidentity'), createObject('key', 'CallRecordsToDownloadQueueName', 'value', variables('downloadQueueName')), createObject('key', 'GraphSubscription__NotificationUrl', 'value', if(parameters('useGraphEventHubManagedIdentity'), format('EventHub:https://{0}/eventhubname/{1}', split(split(reference(resourceId('Microsoft.EventHub/namespaces', if(greaterOrEquals(length(parameters('baseResourceName')), 6), parameters('baseResourceName'), format('{0}{1}', parameters('baseResourceName'), substring(uniqueString(parameters('baseResourceName')), 0, sub(6, length(parameters('baseResourceName'))))))), '2022-10-01-preview').serviceBusEndpoint, '://')[1], ':')[0], 'graphevents'), if(parameters('useSeparateKeyVaultForGraph'), format('EventHub:{0}', reference(resourceId('Microsoft.KeyVault/vaults/secrets', variables('graphKeyVaultName'), 'GraphEventHubConnectionString'), '2023-02-01').secretUri), format('EventHub:{0}', reference(resourceId('Microsoft.KeyVault/vaults/secrets', variables('keyvaultName'), 'GraphEventHubConnectionString'), '2023-02-01').secretUri)))), createObject('key', 'GraphSubscription__Tenants', 'value', variables('tenantDomain')), createObject('key', 'CallRecordInsightsDb__EndpointUri', 'value', reference(resourceId('Microsoft.DocumentDB/databaseAccounts', parameters('cosmosAccountName')), '2023-09-15').documentEndpoint), createObject('key', 'CallRecordInsightsDb__DatabaseName', 'value', reference(resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases', parameters('cosmosAccountName'), parameters('callRecordsDatabaseName')), '2023-09-15').resource.id), createObject('key', 'CallRecordInsightsDb__ProcessedContainerName', 'value', reference(resourceId('Microsoft.DocumentDB/databaseAccounts/sqlDatabases/containers', parameters('cosmosAccountName'), parameters('callRecordsDatabaseName'), parameters('callRecordsContainerName')), '2023-09-15').resource.id), createObject('key', 'GraphNotificationEventHubName', 'value', 'graphevents'), createObject('key', 'EventHubConnection__fullyQualifiedNamespace', 'value', split(split(reference(resourceId('Microsoft.EventHub/namespaces', if(greaterOrEquals(length(parameters('baseResourceName')), 6), parameters('baseResourceName'), format('{0}{1}', parameters('baseResourceName'), substring(uniqueString(parameters('baseResourceName')), 0, sub(6, length(parameters('baseResourceName'))))))), '2022-10-01-preview').serviceBusEndpoint, '://')[1], ':')[0]), createObject('key', 'EventHubConnection__credential', 'value', 'managedidentity'), createObject('key', 'AzureWebJobsSecretStorageType', 'value', 'keyvault'), createObject('key', 'AzureWebJobsSecretStorageKeyVaultUri', 'value', reference(resourceId('Microsoft.KeyVault/vaults', variables('keyvaultName')), '2023-02-01').vaultUri), createObject('key', 'FUNCTIONS_EXTENSION_VERSION', 'value', '~4'), createObject('key', 'FUNCTIONS_WORKER_RUNTIME', 'value', 'dotnet'), createObject('key', 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING', 'value', format('@Microsoft.KeyVault(VaultName={0};SecretName={1})', variables('keyvaultName'), 'StorageAccountConnectionString')), createObject('key', 'WEBSITE_CONTENTSHARE', 'value', toLower(format('{0}-function', parameters('baseResourceName')))), createObject('key', 'SCM_COMMAND_IDLE_TIMEOUT', 'value', '1800')), if(contains(variables('GraphEndpoints'), parameters('location')), createArray(createObject('key', 'GraphSubscription__Endpoint', 'value', variables('GraphEndpoints')[parameters('location')]), createObject('key', 'AzureAd__Instance', 'value', environment().authentication.loginEndpoint), createObject('key', 'AzureWebJobsStorage__blobServiceUri', 'value', reference(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2022-09-01').primaryEndpoints.blob), createObject('key', 'AzureWebJobsStorage__queueServiceUri', 'value', reference(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2022-09-01').primaryEndpoints.queue), createObject('key', 'AzureWebJobsStorage__tableServiceUri', 'value', reference(resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName')), '2022-09-01').primaryEndpoints.table)), createArray(createObject('key', 'AzureWebJobsStorage__accountName', 'value', variables('storageAccountName')))))), lambda('o', lambdaVariables('o').key), lambda('o', lambdaVariables('o').value))]",
               "dependsOn": [
                 "[resourceId('Microsoft.Storage/storageAccounts/queueServices/queues', variables('storageAccountName'), 'default', variables('downloadQueueName'))]",
-                "[resourceId('Microsoft.EventHub/namespaces', parameters('baseResourceName'))]",
+                "[resourceId('Microsoft.EventHub/namespaces', if(greaterOrEquals(length(parameters('baseResourceName')), 6), parameters('baseResourceName'), format('{0}{1}', parameters('baseResourceName'), substring(uniqueString(parameters('baseResourceName')), 0, sub(6, length(parameters('baseResourceName')))))))]",
                 "[resourceId('Microsoft.Web/sites', format('{0}-function', parameters('baseResourceName')))]",
-                "[resourceId('Microsoft.EventHub/namespaces/eventhubs', parameters('baseResourceName'), 'graphevents')]",
+                "functionAppEventHubsRoleAssignment",
+                "functionAppKeyVaultRoleAssignment",
+                "functionAppStorageRoleAssignment",
+                "[resourceId('Microsoft.EventHub/namespaces/eventhubs', if(greaterOrEquals(length(parameters('baseResourceName')), 6), parameters('baseResourceName'), format('{0}{1}', parameters('baseResourceName'), substring(uniqueString(parameters('baseResourceName')), 0, sub(6, length(parameters('baseResourceName')))))), 'graphevents')]",
                 "[resourceId('Microsoft.KeyVault/vaults/secrets', variables('graphKeyVaultName'), 'GraphEventHubConnectionString')]",
                 "[resourceId('Microsoft.KeyVault/vaults/secrets', variables('keyvaultName'), 'GraphEventHubConnectionString')]",
                 "[resourceId('Microsoft.KeyVault/vaults', variables('keyvaultName'))]",
@@ -1204,7 +1264,7 @@
               "apiVersion": "2023-02-01",
               "name": "[format('{0}/{1}', variables('keyvaultName'), 'GraphEventHubConnectionString')]",
               "properties": {
-                "value": "[listkeys(resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('baseResourceName'), 'graphevents', 'sender'), '2022-10-01-preview').primaryConnectionString]",
+                "value": "[listkeys(resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', if(greaterOrEquals(length(parameters('baseResourceName')), 6), parameters('baseResourceName'), format('{0}{1}', parameters('baseResourceName'), substring(uniqueString(parameters('baseResourceName')), 0, sub(6, length(parameters('baseResourceName')))))), 'graphevents', 'sender'), '2022-10-01-preview').primaryConnectionString]",
                 "attributes": {
                   "enabled": true
                 },
@@ -1212,16 +1272,16 @@
               },
               "dependsOn": [
                 "[resourceId('Microsoft.KeyVault/vaults', variables('keyvaultName'))]",
-                "[resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('baseResourceName'), 'graphevents', 'sender')]"
+                "[resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', if(greaterOrEquals(length(parameters('baseResourceName')), 6), parameters('baseResourceName'), format('{0}{1}', parameters('baseResourceName'), substring(uniqueString(parameters('baseResourceName')), 0, sub(6, length(parameters('baseResourceName')))))), 'graphevents', 'sender')]"
               ]
             },
             {
-              "condition": "[and(and(not(parameters('useGraphEventHubManagedIdentity')), parameters('useSeparateKeyVaultForGraph')), and(not(parameters('useGraphEventHubManagedIdentity')), parameters('useSeparateKeyVaultForGraph')))]",
+              "condition": "[and(not(parameters('useGraphEventHubManagedIdentity')), parameters('useSeparateKeyVaultForGraph'))]",
               "type": "Microsoft.KeyVault/vaults/secrets",
               "apiVersion": "2023-02-01",
               "name": "[format('{0}/{1}', variables('graphKeyVaultName'), 'GraphEventHubConnectionString')]",
               "properties": {
-                "value": "[listkeys(resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('baseResourceName'), 'graphevents', 'sender'), '2022-10-01-preview').primaryConnectionString]",
+                "value": "[listkeys(resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', if(greaterOrEquals(length(parameters('baseResourceName')), 6), parameters('baseResourceName'), format('{0}{1}', parameters('baseResourceName'), substring(uniqueString(parameters('baseResourceName')), 0, sub(6, length(parameters('baseResourceName')))))), 'graphevents', 'sender'), '2022-10-01-preview').primaryConnectionString]",
                 "attributes": {
                   "enabled": true
                 },
@@ -1229,7 +1289,7 @@
               },
               "dependsOn": [
                 "[resourceId('Microsoft.KeyVault/vaults', variables('graphKeyVaultName'))]",
-                "[resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('baseResourceName'), 'graphevents', 'sender')]"
+                "[resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', if(greaterOrEquals(length(parameters('baseResourceName')), 6), parameters('baseResourceName'), format('{0}{1}', parameters('baseResourceName'), substring(uniqueString(parameters('baseResourceName')), 0, sub(6, length(parameters('baseResourceName')))))), 'graphevents', 'sender')]"
               ]
             },
             {
@@ -1261,7 +1321,7 @@
             {
               "type": "Microsoft.EventHub/namespaces",
               "apiVersion": "2022-10-01-preview",
-              "name": "[parameters('baseResourceName')]",
+              "name": "[if(greaterOrEquals(length(parameters('baseResourceName')), 6), parameters('baseResourceName'), format('{0}{1}', parameters('baseResourceName'), substring(uniqueString(parameters('baseResourceName')), 0, sub(6, length(parameters('baseResourceName'))))))]",
               "location": "[parameters('location')]",
               "sku": "[variables('configurations')[parameters('deploymentType')].eventHub.sku]",
               "properties": "[variables('configurations')[parameters('deploymentType')].eventHub.properties]",
@@ -1338,7 +1398,7 @@
               },
               "type": "Microsoft.Authorization/roleAssignments",
               "apiVersion": "2022-04-01",
-              "scope": "[format('Microsoft.EventHub/namespaces/{0}/eventhubs/{1}', parameters('baseResourceName'), 'graphevents')]",
+              "scope": "[format('Microsoft.EventHub/namespaces/{0}/eventhubs/{1}', if(greaterOrEquals(length(parameters('baseResourceName')), 6), parameters('baseResourceName'), format('{0}{1}', parameters('baseResourceName'), substring(uniqueString(parameters('baseResourceName')), 0, sub(6, length(parameters('baseResourceName')))))), 'graphevents')]",
               "name": "[guid(resourceId('Microsoft.Web/sites', format('{0}-function', parameters('baseResourceName'))), variables('neededRoles').functionApp.EventHubs[copyIndex()], resourceGroup().id)]",
               "properties": {
                 "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('neededRoles').functionApp.EventHubs[copyIndex()])]",
@@ -1347,7 +1407,7 @@
               },
               "dependsOn": [
                 "[resourceId('Microsoft.Web/sites', format('{0}-function', parameters('baseResourceName')))]",
-                "[resourceId('Microsoft.EventHub/namespaces/eventhubs', parameters('baseResourceName'), 'graphevents')]"
+                "[resourceId('Microsoft.EventHub/namespaces/eventhubs', if(greaterOrEquals(length(parameters('baseResourceName')), 6), parameters('baseResourceName'), format('{0}{1}', parameters('baseResourceName'), substring(uniqueString(parameters('baseResourceName')), 0, sub(6, length(parameters('baseResourceName')))))), 'graphevents')]"
               ]
             },
             {
@@ -1393,7 +1453,7 @@
               },
               "type": "Microsoft.Authorization/roleAssignments",
               "apiVersion": "2022-04-01",
-              "scope": "[format('Microsoft.EventHub/namespaces/{0}/eventhubs/{1}', parameters('baseResourceName'), 'graphevents')]",
+              "scope": "[format('Microsoft.EventHub/namespaces/{0}/eventhubs/{1}', if(greaterOrEquals(length(parameters('baseResourceName')), 6), parameters('baseResourceName'), format('{0}{1}', parameters('baseResourceName'), substring(uniqueString(parameters('baseResourceName')), 0, sub(6, length(parameters('baseResourceName')))))), 'graphevents')]",
               "name": "[guid(parameters('graphChangeTrackingAppObjectId'), variables('neededRoles').graphChangeTrackingApp.EventHubs[copyIndex()], resourceGroup().id)]",
               "properties": {
                 "roleDefinitionId": "[subscriptionResourceId('Microsoft.Authorization/roleDefinitions', variables('neededRoles').graphChangeTrackingApp.EventHubs[copyIndex()])]",
@@ -1401,7 +1461,7 @@
                 "principalType": "ServicePrincipal"
               },
               "dependsOn": [
-                "[resourceId('Microsoft.EventHub/namespaces/eventhubs', parameters('baseResourceName'), 'graphevents')]"
+                "[resourceId('Microsoft.EventHub/namespaces/eventhubs', if(greaterOrEquals(length(parameters('baseResourceName')), 6), parameters('baseResourceName'), format('{0}{1}', parameters('baseResourceName'), substring(uniqueString(parameters('baseResourceName')), 0, sub(6, length(parameters('baseResourceName')))))), 'graphevents')]"
               ]
             },
             {
@@ -1495,8 +1555,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.25.3.34343",
-              "templateHash": "7102274191347685"
+              "version": "0.28.1.47646",
+              "templateHash": "8805216685510205529"
             }
           },
           "parameters": {
@@ -1664,8 +1724,8 @@
           "metadata": {
             "_generator": {
               "name": "bicep",
-              "version": "0.25.3.34343",
-              "templateHash": "14633294426575691402"
+              "version": "0.28.1.47646",
+              "templateHash": "774527224550770436"
             }
           },
           "parameters": {

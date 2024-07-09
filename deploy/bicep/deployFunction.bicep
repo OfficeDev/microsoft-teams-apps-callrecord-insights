@@ -296,14 +296,14 @@ var graphChangeNotificationSubnets = loadJsonContent('GraphChangeNotificationSub
 
 // Event Hub
 resource eventHubNamespace 'Microsoft.EventHub/namespaces@2022-10-01-preview' = {
-  name: baseResourceName
+  name: length(baseResourceName) >= 6 ? baseResourceName : '${baseResourceName}${substring(uniqueString(baseResourceName),0, 6 - length(baseResourceName))}'
   location: location
   sku: configurations[deploymentType].eventHub.sku
   properties: configurations[deploymentType].eventHub.properties
   resource graphEventHub 'eventhubs' = {
     name: 'graphevents'
     properties: configurations[deploymentType].eventHub.eventhubs.properties
-    resource senderAuthorizationRule 'authorizationRules' = if (!useGraphEventHubManagedIdentity) {
+    resource senderAuthorizationRule 'authorizationRules' = {
       name: 'sender'
       properties: { rights: [ 'Send' ] }
     }
@@ -338,8 +338,10 @@ resource serverfarm 'Microsoft.Web/serverfarms@2022-09-01' = {
   sku: configurations[deploymentType].serverfarm.sku
 }
 
+var eventHubFQDN = split(split(eventHubNamespace.properties.serviceBusEndpoint,'://')[1],':')[0]
+
 var GraphNotificationUrl = useGraphEventHubManagedIdentity /*
-*/ ? 'EventHub:${eventHubNamespace.properties.serviceBusEndpoint}/eventhubname/${eventHubNamespace::graphEventHub.name}' /*
+*/ ? 'EventHub:https://${eventHubFQDN}/eventhubname/${eventHubNamespace::graphEventHub.name}' /*
 */ : useSeparateKeyVaultForGraph /*
 */    ? 'EventHub:${graphKeyVault::graphEventHubConnectionString.properties.secretUri}' /*
 */    : 'EventHub:${keyvault::graphEventHubConnectionString.properties.secretUri}'
@@ -378,7 +380,7 @@ resource functionApp 'Microsoft.Web/sites@2022-09-01' = {
         
         { key: 'GraphNotificationEventHubName', value: eventHubNamespace::graphEventHub.name }
         
-        { key: 'EventHubConnection__fullyQualifiedNamespace', value: split(split(eventHubNamespace.properties.serviceBusEndpoint,'://')[1],':')[0] }
+        { key: 'EventHubConnection__fullyQualifiedNamespace', value: eventHubFQDN }
         { key: 'EventHubConnection__credential', value: 'managedidentity' }
 
         { key: 'AzureWebJobsSecretStorageType', value: 'keyvault' }
@@ -395,12 +397,13 @@ resource functionApp 'Microsoft.Web/sites@2022-09-01' = {
         { key: 'AzureWebJobsStorage__blobServiceUri', value: storageAccount.properties.primaryEndpoints.blob }
         { key: 'AzureWebJobsStorage__queueServiceUri', value: storageAccount.properties.primaryEndpoints.queue }
         { key: 'AzureWebJobsStorage__tableServiceUri', value: storageAccount.properties.primaryEndpoints.table }
-
       ] : [ // Non-GCCH/DoD Configuration      
         { key: 'AzureWebJobsStorage__accountName', value: storageAccount.name }
       ]]), o => o.key, o => o.value)
-      dependsOn: [
+    dependsOn: [
         functionAppKeyVaultRoleAssignment // Ensure the function app has access to the key vault before reading referenced secrets
+        functionAppEventHubsRoleAssignment
+        functionAppStorageRoleAssignment
       ]
   }
 }
@@ -419,7 +422,7 @@ resource keyvault 'Microsoft.KeyVault/vaults@2023-02-01' = {
     }
   }
 
-  resource graphEventHubConnectionString 'secrets@2023-02-01' = if (!useGraphEventHubManagedIdentity && !useSeparateKeyVaultForGraph) {
+  resource graphEventHubConnectionString 'secrets' = if (!useGraphEventHubManagedIdentity && !useSeparateKeyVaultForGraph) {
     name: 'GraphEventHubConnectionString'
     properties: {
       value: eventHubNamespace::graphEventHub::senderAuthorizationRule.listkeys().primaryConnectionString
@@ -435,7 +438,7 @@ resource graphKeyVault 'Microsoft.KeyVault/vaults@2023-02-01' = if (!useGraphEve
   location: location
   properties: configurations[deploymentType].keyvault.properties
 
-  resource graphEventHubConnectionString 'secrets' = if (!useGraphEventHubManagedIdentity && useSeparateKeyVaultForGraph) {
+  resource graphEventHubConnectionString 'secrets' = {
     name: 'GraphEventHubConnectionString'
     properties: {
       value: eventHubNamespace::graphEventHub::senderAuthorizationRule.listkeys().primaryConnectionString
