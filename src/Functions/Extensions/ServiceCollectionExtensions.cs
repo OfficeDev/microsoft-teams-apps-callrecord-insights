@@ -82,9 +82,10 @@ namespace CallRecordInsights.Extensions
                 .AddTokenCredential(sectionName)
                 .AddAzureMultiTenantGraphAuthenticationProvider()
                 .AddScoped<GraphServiceClient, GraphServiceClient>(sp => 
-                    new GraphServiceClient(sp.GetRequiredService<IAuthenticationProvider>(), 
-                    baseUrl: $"https://{sp.GetRequiredService<CallRecordsGraphOptions>().Endpoint}/v1.0")
-                );
+                    new GraphServiceClient(
+                        authenticationProvider: sp.GetRequiredService<IAuthenticationProvider>(), 
+                        baseUrl: $"https://{sp.GetRequiredService<CallRecordsGraphOptions>().Endpoint}/v1.0"
+                    ));
         }
 
 

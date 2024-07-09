@@ -360,28 +360,27 @@ resource functionApp 'Microsoft.Web/sites@2022-09-01' = {
   properties: configurations[deploymentType].functionApp.properties
   resource appSettings 'config' = {
     name: 'appsettings'
-    properties: toObject([
+    properties: toObject(flatten([
+      [
         { key: 'RenewSubscriptionScheduleCron', value: '0 0 */2 * * *' }
         // CallRecords Queue Configuration
         { key: 'CallRecordsQueueConnection__queueServiceUri', value: storageAccount.properties.primaryEndpoints.queue }
         { key: 'CallRecordsQueueConnection__credential', value: 'managedidentity' }
         { key: 'CallRecordsToDownloadQueueName', value: storageAccount::queues::download.name }
-
+    
         // Graph Subscription Manager Configuration
         { key: 'GraphSubscription__NotificationUrl', value: GraphNotificationUrl }
         { key: 'GraphSubscription__Tenants', value: tenantDomain }
-        { key: 'GraphSubscription__Endpoint', value: contains(GraphEndpoints, location) ? GraphEndpoints[location] : 'graph.microsoft.com' }
-
+    
         { key: 'CallRecordInsightsDb__EndpointUri', value: cosmosAccount.properties.documentEndpoint }
         { key: 'CallRecordInsightsDb__DatabaseName', value: cosmosAccount::database.properties.resource.id }
         { key: 'CallRecordInsightsDb__ProcessedContainerName', value: cosmosAccount::database::container.properties.resource.id }
-
+        
         { key: 'GraphNotificationEventHubName', value: eventHubNamespace::graphEventHub.name }
         
         { key: 'EventHubConnection__fullyQualifiedNamespace', value: split(split(eventHubNamespace.properties.serviceBusEndpoint,'://')[1],':')[0] }
         { key: 'EventHubConnection__credential', value: 'managedidentity' }
-        
-        { key: 'AzureWebJobsStorage__accountName', value: storageAccount.name }
+
         { key: 'AzureWebJobsSecretStorageType', value: 'keyvault' }
         { key: 'AzureWebJobsSecretStorageKeyVaultUri', value: keyvault.properties.vaultUri }
         { key: 'FUNCTIONS_EXTENSION_VERSION', value: '~4' }
@@ -389,7 +388,17 @@ resource functionApp 'Microsoft.Web/sites@2022-09-01' = {
         { key: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING', value: '@Microsoft.KeyVault(VaultName=${keyvault.name};SecretName=${keyvault::storageAccountConnectionString.name})' }
         { key: 'WEBSITE_CONTENTSHARE', value: toLower(functionApp.name) }
         { key: 'SCM_COMMAND_IDLE_TIMEOUT', value: '1800' }
-      ], o => o.key, o => o.value)
+      ]
+      contains(GraphEndpoints, location) ? [ // GCCH/DoD Configuration
+        { key: 'GraphSubscription__Endpoint', value: GraphEndpoints[location] }
+        { key: 'AzureAd__Instance', value: environment().authentication.loginEndpoint }  
+        { key: 'AzureWebJobsStorage__blobServiceUri', value: storageAccount.properties.primaryEndpoints.blob }
+        { key: 'AzureWebJobsStorage__queueServiceUri', value: storageAccount.properties.primaryEndpoints.queue }
+        { key: 'AzureWebJobsStorage__tableServiceUri', value: storageAccount.properties.primaryEndpoints.table }
+
+      ] : [ // Non-GCCH/DoD Configuration      
+        { key: 'AzureWebJobsStorage__accountName', value: storageAccount.name }
+      ]]), o => o.key, o => o.value)
       dependsOn: [
         functionAppKeyVaultRoleAssignment // Ensure the function app has access to the key vault before reading referenced secrets
       ]
