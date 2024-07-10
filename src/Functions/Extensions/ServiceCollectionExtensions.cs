@@ -67,7 +67,6 @@ namespace CallRecordInsights.Extensions
                 );
         }
 
-
         /// <summary>
         /// Adds the <see cref="GraphServiceClient"/> to the service collection using the <see cref="AzureIdentityMultiTenantGraphAuthenticationProvider"/>.
         /// </summary>
@@ -81,13 +80,12 @@ namespace CallRecordInsights.Extensions
             return services
                 .AddTokenCredential(sectionName)
                 .AddAzureMultiTenantGraphAuthenticationProvider()
-                .AddScoped<GraphServiceClient, GraphServiceClient>(sp => 
+                .AddScoped(sp =>
                     new GraphServiceClient(
-                        authenticationProvider: sp.GetRequiredService<IAuthenticationProvider>(), 
+                        authenticationProvider: sp.GetRequiredService<IAuthenticationProvider>(),
                         baseUrl: $"https://{sp.GetRequiredService<CallRecordsGraphOptions>().Endpoint}/v1.0"
                     ));
         }
-
 
         /// <summary>
         /// Adds the <see cref="AzureIdentityMultiTenantGraphAuthenticationProvider"/> to the service collection.
@@ -99,7 +97,6 @@ namespace CallRecordInsights.Extensions
             return services
                 .AddScoped<IAuthenticationProvider, AzureIdentityMultiTenantGraphAuthenticationProvider>();
         }
-
 
         /// <summary>
         /// Adds the <see cref="TokenCredential"/> to the service collection using the <see cref="DefaultAzureCredential"/> 
