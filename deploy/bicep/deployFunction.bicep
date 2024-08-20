@@ -296,14 +296,14 @@ var graphChangeNotificationSubnets = loadJsonContent('GraphChangeNotificationSub
 
 // Event Hub
 resource eventHubNamespace 'Microsoft.EventHub/namespaces@2022-10-01-preview' = {
-  name: baseResourceName
+  name: length(baseResourceName) >= 6 ? baseResourceName : '${baseResourceName}${substring(uniqueString(baseResourceName),0, 6 - length(baseResourceName))}'
   location: location
   sku: configurations[deploymentType].eventHub.sku
   properties: configurations[deploymentType].eventHub.properties
   resource graphEventHub 'eventhubs' = {
     name: 'graphevents'
     properties: configurations[deploymentType].eventHub.eventhubs.properties
-    resource senderAuthorizationRule 'authorizationRules' = if (!useGraphEventHubManagedIdentity) {
+    resource senderAuthorizationRule 'authorizationRules' = {
       name: 'sender'
       properties: { rights: [ 'Send' ] }
     }
@@ -338,11 +338,21 @@ resource serverfarm 'Microsoft.Web/serverfarms@2022-09-01' = {
   sku: configurations[deploymentType].serverfarm.sku
 }
 
+var eventHubFQDN = split(split(eventHubNamespace.properties.serviceBusEndpoint,'://')[1],':')[0]
+
 var GraphNotificationUrl = useGraphEventHubManagedIdentity /*
-*/ ? 'EventHub:${eventHubNamespace.properties.serviceBusEndpoint}/eventhubname/${eventHubNamespace::graphEventHub.name}' /*
+*/ ? 'EventHub:https://${eventHubFQDN}/eventhubname/${eventHubNamespace::graphEventHub.name}' /*
 */ : useSeparateKeyVaultForGraph /*
 */    ? 'EventHub:${graphKeyVault::graphEventHubConnectionString.properties.secretUri}' /*
 */    : 'EventHub:${keyvault::graphEventHubConnectionString.properties.secretUri}'
+
+var GraphEndpoints = {
+  usgovvirginia : 'graph.microsoft.us'
+  usgovarizona : 'graph.microsoft.us'
+  usgovtexas : 'graph.microsoft.us'
+  usdodcentral : 'dod-graph.microsoft.us'
+  usdodeast : 'dod-graph.microsoft.us'
+}
 
 resource functionApp 'Microsoft.Web/sites@2022-09-01' = {
   name: '${baseResourceName}-function'
@@ -352,34 +362,49 @@ resource functionApp 'Microsoft.Web/sites@2022-09-01' = {
   properties: configurations[deploymentType].functionApp.properties
   resource appSettings 'config' = {
     name: 'appsettings'
-    properties: toObject([
+    properties: toObject(flatten([
+      [
         { key: 'RenewSubscriptionScheduleCron', value: '0 0 */2 * * *' }
         // CallRecords Queue Configuration
         { key: 'CallRecordsQueueConnection__queueServiceUri', value: storageAccount.properties.primaryEndpoints.queue }
         { key: 'CallRecordsQueueConnection__credential', value: 'managedidentity' }
         { key: 'CallRecordsToDownloadQueueName', value: storageAccount::queues::download.name }
-
+    
         // Graph Subscription Manager Configuration
         { key: 'GraphSubscription__NotificationUrl', value: GraphNotificationUrl }
         { key: 'GraphSubscription__Tenants', value: tenantDomain }
-
+    
         { key: 'CallRecordInsightsDb__EndpointUri', value: cosmosAccount.properties.documentEndpoint }
         { key: 'CallRecordInsightsDb__DatabaseName', value: cosmosAccount::database.properties.resource.id }
         { key: 'CallRecordInsightsDb__ProcessedContainerName', value: cosmosAccount::database::container.properties.resource.id }
-
+        
         { key: 'GraphNotificationEventHubName', value: eventHubNamespace::graphEventHub.name }
         
-        { key: 'EventHubConnection__fullyQualifiedNamespace', value: split(split(eventHubNamespace.properties.serviceBusEndpoint,'://')[1],':')[0] }
+        { key: 'EventHubConnection__fullyQualifiedNamespace', value: eventHubFQDN }
         { key: 'EventHubConnection__credential', value: 'managedidentity' }
-        
-        { key: 'AzureWebJobsStorage__accountName', value: storageAccount.name }
+
         { key: 'AzureWebJobsSecretStorageType', value: 'keyvault' }
         { key: 'AzureWebJobsSecretStorageKeyVaultUri', value: keyvault.properties.vaultUri }
         { key: 'FUNCTIONS_EXTENSION_VERSION', value: '~4' }
         { key: 'FUNCTIONS_WORKER_RUNTIME', value: 'dotnet' }
         { key: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING', value: '@Microsoft.KeyVault(VaultName=${keyvault.name};SecretName=${keyvault::storageAccountConnectionString.name})' }
         { key: 'WEBSITE_CONTENTSHARE', value: toLower(functionApp.name) }
-      ], o => o.key, o => o.value)
+        { key: 'SCM_COMMAND_IDLE_TIMEOUT', value: '1800' }
+      ]
+      contains(GraphEndpoints, location) ? [ // GCCH/DoD Configuration
+        { key: 'GraphSubscription__Endpoint', value: GraphEndpoints[location] }
+        { key: 'AzureAd__Instance', value: environment().authentication.loginEndpoint }  
+        { key: 'AzureWebJobsStorage__blobServiceUri', value: storageAccount.properties.primaryEndpoints.blob }
+        { key: 'AzureWebJobsStorage__queueServiceUri', value: storageAccount.properties.primaryEndpoints.queue }
+        { key: 'AzureWebJobsStorage__tableServiceUri', value: storageAccount.properties.primaryEndpoints.table }
+      ] : [ // Non-GCCH/DoD Configuration      
+        { key: 'AzureWebJobsStorage__accountName', value: storageAccount.name }
+      ]]), o => o.key, o => o.value)
+    dependsOn: [
+        functionAppKeyVaultRoleAssignment // Ensure the function app has access to the key vault before reading referenced secrets
+        functionAppEventHubsRoleAssignment
+        functionAppStorageRoleAssignment
+      ]
   }
 }
 
@@ -397,7 +422,7 @@ resource keyvault 'Microsoft.KeyVault/vaults@2023-02-01' = {
     }
   }
 
-  resource graphEventHubConnectionString 'secrets@2023-02-01' = if (!useGraphEventHubManagedIdentity && !useSeparateKeyVaultForGraph) {
+  resource graphEventHubConnectionString 'secrets' = if (!useGraphEventHubManagedIdentity && !useSeparateKeyVaultForGraph) {
     name: 'GraphEventHubConnectionString'
     properties: {
       value: eventHubNamespace::graphEventHub::senderAuthorizationRule.listkeys().primaryConnectionString
@@ -413,7 +438,7 @@ resource graphKeyVault 'Microsoft.KeyVault/vaults@2023-02-01' = if (!useGraphEve
   location: location
   properties: configurations[deploymentType].keyvault.properties
 
-  resource graphEventHubConnectionString 'secrets' = if (!useGraphEventHubManagedIdentity && useSeparateKeyVaultForGraph) {
+  resource graphEventHubConnectionString 'secrets' = {
     name: 'GraphEventHubConnectionString'
     properties: {
       value: eventHubNamespace::graphEventHub::senderAuthorizationRule.listkeys().primaryConnectionString

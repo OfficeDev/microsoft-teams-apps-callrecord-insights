@@ -23,10 +23,11 @@ param(
     $DeploymentSize = 'Production',
 
     [Parameter(HelpMessage = 'The Azure region that''s right for you. Not every resource is available in every region.')]
-    [ValidateSet('australiacentral', 'australiaeast', 'australiasoutheast', 'brazilsouth', 'canadacentral', 'canadaeast', 'centralindia', 'centralus', 'eastasia',
-        'eastus', 'eastus2', 'francecentral', 'germanywestcentral', 'japaneast', 'japanwest', 'koreacentral', 'koreasouth', 'northcentralus', 'northeurope', 'norwayeast',
-        'polandcentral', 'qatarcentral', 'southafricanorth', 'southcentralus', 'southeastasia', 'southindia', 'swedencentral', 'switzerlandnorth', 'uaenorth', 'uksouth',
-        'ukwest', 'westcentralus', 'westeurope', 'westindia', 'westus', 'westus2', 'westus3')]
+    [ValidateSet('australiaeast', 'brazilsouth', 'canadacentral', 'centralindia', 'centralus', 'eastasia', 'eastus', 'eastus2',
+        'francecentral', 'germanywestcentral', 'japaneast', 'koreacentral', 'northcentralus', 'northeurope', 'norwayeast',
+        'polandcentral', 'southafricanorth', 'southcentralus', 'southeastasia', 'swedencentral', 'switzerlandnorth',
+        'uaenorth', 'uksouth', 'westcentralus', 'westeurope', 'westus', 'westus2', 'westus3',
+        'usgovvirginia', 'usgovarizona', 'usgovtexas', 'usdodcentral')]
     [string]
     $Location = 'westus',
 
@@ -82,9 +83,21 @@ if (!(Get-Command -Name az -CommandType Application -ErrorAction SilentlyContinu
     return
 }
 
+$GraphEndpoint = switch ($Location) {
+    { $_ -in @('usgovvirginia', 'usgovarizona', 'usgovtexas', 'usgoviowa') } { 'graph.microsoft.us' }
+    { $_ -in @('usdodcentral','usdodeast') } { 'dod-graph.microsoft.us' }
+    default { 'graph.microsoft.com' }
+}
+
+$AzureCloud = switch ($GraphEndpoint) {
+    { $_ -in @('usgovvirginia', 'usgovarizona', 'usgovtexas', 'usgoviowa') } { 'AzureUSGovernment' }
+    { $_ -in @('usdodcentral','usdodeast') } { 'AzureUSGovernment' }
+    default { 'AzureCloud' }
+}
+
 $AzCommands = @{
-    getdeployment             = { az deployment group show --resource-group $args[0] --name $args[1] --query properties 2>&1 }
-    deploybicep               = {
+    getdeployment                  = { az deployment group show --resource-group $args[0] --name $args[1] --query properties 2>&1 }
+    deploybicep                    = {
         param(
             [string]
             $ResourceGroupName,
@@ -119,27 +132,33 @@ $AzCommands = @{
         }
         az @parameters 2>&1
     }  
-    getdeploymentoperations   = { az deployment operation group list --resource-group $args[0] --name $args[1] --query "[].{provisioningState:properties.provisioningState,targetResource:properties.targetResource.id,statusMessage:properties.statusMessage.error.message}" 2>&1 }
-    getazsubscription         = { az account show --query id 2>&1 }
-    connect                   = { az login 2>&1; if ($LASTEXITCODE -eq 0) { az account set --subscription $args[0] 2>&1 } }
-    getazusername             = { az ad signed-in-user show --query userPrincipalName 2>&1 }
-    getazoid                  = { az ad signed-in-user show --query id 2>&1 }
-    getaztenant               = { az account show --query tenantId 2>&1 }
-    getspnobjectid            = { az ad sp list --spn $args[0] --query "[].id" 2>&1 }
-    getresourcegroup          = { az group show --name $args[0] 2>&1 }
-    createresourcegroup       = { az group create --name $args[0] --location $args[1] 2>&1 }
-    getaadapproleassignments  = { az rest --method get --url "https://graph.microsoft.com/v1.0/servicePrincipals/$($args[0])/appRoleAssignments" 2>&1 }
-    addaadapproleassignment   = {
+    getdeploymentoperations        = { az deployment operation group list --resource-group $args[0] --name $args[1] --query "[].{provisioningState:properties.provisioningState,targetResource:properties.targetResource.id,statusMessage:properties.statusMessage.error.message}" 2>&1 }
+    getenvironment                 = { az cloud show --query name 2>&1 }
+    setenvironment                 = { az cloud set --name $args[0] 2>&1 }
+    getazsubscription              = { az account show --query id 2>&1 }
+    connect                        = { az login 2>&1; if ($LASTEXITCODE -eq 0) { az account set --subscription $args[0] 2>&1 } }
+    getazusername                  = { az ad signed-in-user show --query userPrincipalName 2>&1 }
+    getazoid                       = { az ad signed-in-user show --query id 2>&1 }
+    getaztenant                    = { az account show --query tenantId 2>&1 }
+    getspnobjectid                 = { az ad sp list --spn $args[0] --query "[].id" 2>&1 }
+    createspn                      = { az ad sp create --id $args[0] --query "[].id" 2>&1 }
+    getresourcegroup               = { az group show --name $args[0] 2>&1 }
+    createresourcegroup            = { az group create --name $args[0] --location $args[1] 2>&1 }
+    getaadapproleassignments       = { az rest --method get --url "https://${GraphEndpoint}/v1.0/servicePrincipals/$($args[0])/appRoleAssignments" 2>&1 }
+    addaadapproleassignment        = {
         $request = @{
             principalId = $args[0]
             resourceId  = $args[1]
             appRoleId   = $args[2]
         }
         $body = ($request | ConvertTo-Json -Compress).Replace('"', '\"')
-        az rest --method post --url "https://graph.microsoft.com/v1.0/servicePrincipals/$($args[0])/appRoleAssignments" --body "$body" 2>&1
+        az rest --method post --url "https://${GraphEndpoint}/v1.0/servicePrincipals/$($args[0])/appRoleAssignments" --body "$body" 2>&1
     }
-    getwebappdeployment       = { az webapp log deployment show --resource-group $args[0] --name $args[1] 2>&1 }
-    getmasterkey              = { az functionapp keys list --resource-group $args[0] --name $args[1] --query masterKey 2>&1 }
+    getwebappdeployment            = { az webapp log deployment show --resource-group $args[0] --name $args[1] 2>&1 }
+    getmasterkey                   = { az functionapp keys list --resource-group $args[0] --name $args[1] --query masterKey 2>&1 }
+    getwebappdeploymentlogs        = { az webapp log deployment show --resource-group $args[0] --name $args[1] --query "[].{time:log_time,message:message,url:details_url}" 2>&1 }
+    getwebapppublishingcredentials = { az webapp deployment list-publishing-credentials --resource-group $args[0] --name $args[1] --query "{pwd:publishingPassword,un:publishingUserName}" 2>&1 }
+    getwebappdeploymentlogdetails  = { az rest --uri ($args[0] -replace '(?<=://)',"$($args[1].un):$($args[1].pwd)@") --skip-authorization-header --query "[].{time:log_time,message:message,url:details_url}" 2>&1 }
 }
 
 function FormatDictionary {
@@ -281,34 +300,56 @@ function deployifneeded {
             $Errors | ForEach-Object { Write-Error -ErrorRecord $_ }
             return $null
         }
-        $state = $Deployment.provisioningState.ToLower()
-        $JobStatus = "$DeploymentType deployment is $state."
-        if ($StatusMessages.Add($JobStatus)) {
-            Write-Host $JobStatus
-        }
-        $Errors, $OperationState = TryExecuteMethod getdeploymentoperations $ResourceGroupName $DeploymentName
-        if (!$Errors) {
-            @($OperationState | Sort-Object -Property provisioningState, targetResource).ForEach({
-                if (!$_.targetResource) { return }
-                $verb = if ($_.provisioningState.EndsWith('ed')) { 'has' } else { 'is' }
-                $Message = "Deploy Resource: $($_.targetResource.Split('/providers/',2)[1]) $verb $($_.provisioningState)."
-                if ($StatusMessages.Add($Message)) {
-                    $Color = if ($Message -match 'has Succeeded') {
-                        'Green'
-                    } elseif ($Message -match 'has Failed') {
-                        'Red'
-                    } else {
-                        'White'
+
+        $nestedDeployments = [Stack[string]]@($DeploymentName)
+        $processedDeployments = [HashSet[string]]@()
+
+        while ($nestedDeployments.Count -gt 0) {
+            $nestedDeploymentName = $nestedDeployments.Pop()
+            if (!$processedDeployments.Add($nestedDeploymentName)) { continue }
+            $Errors, $OperationState = TryExecuteMethod getdeploymentoperations $ResourceGroupName $nestedDeploymentName
+            if (!$Errors) {
+                $OperationState | ForEach-Object {
+                    if (!$_.targetResource) { return }
+                    if ($_.targetResource.Split('/')[-2] -eq 'deployments') {
+                        $nestedDeployments.Push($_.targetResource.Split('/')[-1])
                     }
-                    Write-Host $Message -ForegroundColor $Color
-                    if ($_.provisioningState -eq 'Failed') {
-                        Write-Warning "$($_.statusMessage)"
+                    $verb = if ($_.provisioningState.EndsWith('ed')) { 'has' } else { 'is' }
+                    $Message = "Deploy Resource: $($_.targetResource.Split('/providers/',2)[1]) $verb $($_.provisioningState)."
+                    if ($StatusMessages.Add($Message)) {
+                        $Color = if ($Message -match 'has Succeeded') {
+                            'Green'
+                        } elseif ($Message -match 'has Failed') {
+                            'Red'
+                        } else {
+                            'White'
+                        }
+                        Write-Host $Message -ForegroundColor $Color
+                        if ($_.provisioningState -eq 'Failed') {
+                            Write-Warning "$($_.statusMessage)"                           
+                        }
                     }
                 }
-            })
+            }
         }
+
+        # $state = $Deployment.provisioningState.ToLower()
+        $verb = if ($Deployment.provisioningState.EndsWith('ed')) { 'has' } else { 'is' }
+
+        $Message = "$DeploymentType deployment $verb $($Deployment.provisioningState)."
+        if ($StatusMessages.Add($Message)) {
+            $Color = if ($Message -match 'has Succeeded') {
+                'Green'
+            } elseif ($Message -match 'has Failed') {
+                'Red'
+            } else {
+                'White'
+            }
+            Write-Host $Message -ForegroundColor $Color
+        }
+
         $Errors = $null
-        switch ($state) {
+        switch ($Deployment.provisioningState) {
             'cancelled' {
                 Write-Warning "$DeploymentType in resource group '$ResourceGroupName' deployment was cancelled! Please try again."
                 return $null
@@ -329,6 +370,22 @@ Write-Host "Ensuring we are connected to subscription '$SubscriptionId'."
 $Errors, $ConnectedSubscriptionId = TryExecuteMethod getazsubscription
 
 if ($Errors -or $null -eq $ConnectedSubscriptionId -or $ConnectedSubscriptionId -ne $SubscriptionId) {
+    $Errors, $CurrentAzureCloud = TryExecuteMethod getenvironment $AzureCloud
+    if ($Errors) {
+        Write-Error "Failed to get the current environment. Please ensure you have access to the subscription and try again."
+        $Errors | ForEach-Object { Write-Error -ErrorRecord $_ }
+        return
+    }
+    if ($CurrentAzureCloud -ne $AzureCloud) {
+        Write-Host "Setting the environment to '$AzureCloud'."
+        $Errors, $null = TryExecuteMethod setenvironment $AzureCloud
+        if ($Errors) {
+            Write-Error "Failed to set the environment to '$AzureCloud'. Please ensure you have access to the subscription and try again."
+            $Errors | ForEach-Object { Write-Error -ErrorRecord $_ }
+            return
+        }
+    }
+
     Write-Host "Connecting to subscription '$SubscriptionId'. Please login if prompted."
     $Errors, $null = TryExecuteMethod connect $SubscriptionId
     if ($Errors) {
@@ -379,6 +436,15 @@ if ($Errors) {
     Write-Error "Failed to get the SPN object id for the Microsoft Graph Change Tracking app. Please ensure you have access to the tenant and try again."
     $Errors | ForEach-Object { Write-Error -ErrorRecord $_ }
     return
+}
+if ($null -eq $GraphChangeTrackingSPNObjectId) { 
+    Write-Host "Creating SPN for the Microsoft Graph Change Tracking app."
+    $Errors, $GraphChangeTrackingSPNObjectId = TryExecuteMethod createspn '0bf30f3b-4a52-48df-9a82-234910c4a086'
+    if ($Errors) {
+        Write-Error "Failed to create the SPN object id for the Microsoft Graph Change Tracking app. Please ensure you have access to the tenant and try again."
+        $Errors | ForEach-Object { Write-Error -ErrorRecord $_ }
+        return
+    }
 }
 if ($GraphChangeTrackingSPNObjectId -isnot [string]) { $GraphChangeTrackingSPNObjectId = $GraphChangeTrackingSPNObjectId[0] }
 Write-Host "SPN object id for the Microsoft Graph Change Tracking app is '$GraphChangeTrackingSPNObjectId'." -ForegroundColor Green
@@ -466,8 +532,45 @@ while (!$deployed) {
     }
     $latestmessage = if ($null -ne $CurrentDeploymentLogs) { $CurrentDeploymentLogs[-1].message } else { '' }
     if ($latestmessage -cmatch 'Deployment Failed.') {
-        $detailsUrl = $CurrentDeploymentLogs.Where({$_.details_url},'First',1)[0].details_url -replace '(?<=logs)/[^/]+$'
-        Write-Error "Failed to deploy function app '$functionName'. See $detailsUrl for more details."
+        Write-Error "Failed to deploy function app '$functionName'. Getting deployment logs..."
+
+        $Errors, $MainDeploymentLogs = TryExecuteMethod getwebappdeploymentlogs $ResourceGroupName $functionName
+        if ($Errors.Count -gt 0) {
+            $MainDeploymentLogs = $null
+            Write-Error "Failed to get deployment logs for function app '$functionName'."
+            $Errors | ForEach-Object { Write-Error $_.Exception.Message }
+        }
+        $NeedDetail = @($MainDeploymentLogs | Where-Object { $_.url })
+        $DeploymentLogDetails = if ($NeedDetail.Count -gt 0) {
+            $Errors, $PublishingCredentials = TryExecuteMethod getwebapppublishingcredentials $ResourceGroupName $functionName
+            if ($Errors.Count -gt 0) {
+                Write-Error "Failed to get publishing credentials for function app '$functionName'."
+                $PublishingCredentials = $null
+                $Errors | ForEach-Object { Write-Error $_.Exception.Message }
+                return
+            }
+            @($NeedDetail | ForEach-Object {
+                if ($null -eq $PublishingCredentials.un -or $null -eq $PublishingCredentials.pwd) { return }
+                $Errors, $Details = TryExecuteMethod getwebappdeploymentlogdetails $_.url $PublishingCredentials
+                if ($Errors.Count -gt 0) {
+                    Write-Error "Failed to get deployment log details for function app '$functionName'."
+                    $Details = $null
+                    $Errors | ForEach-Object { Write-Error $_.Exception.Message }
+                    return
+                }
+                $Details
+            })
+        } else {
+            @()
+        }
+
+        $DeploymentLogs = $MainDeploymentLogs + $DeploymentLogDetails | Where-Object { $_.time } |
+            Sort-Object time | ForEach-Object {'{0:o}: {1}' -f $_.time, $_.message }
+
+        if ($DeploymentLogs.Count -gt 0) {
+            Write-Warning "Deployment logs for function app '$functionName':`n$($DeploymentLogs -join "`n")"
+        }
+
         return
     }
     $deployed = $latestmessage -match '^\s*deployment\s+successful\.\s*$'

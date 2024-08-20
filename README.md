@@ -10,23 +10,7 @@ Because this solution uses Cosmos DB it is highly scalable and because it uses K
 
 The solution is fully deployed within your own tenant. All data processing and data storage is done in whichever tenant you deploy the application.
 
-1. [High Level Architecture](./docs/high-level-architecture.md)
-
-1. [Requirements](./docs/requirements.md)
-
-1. [Deployment](./docs/deployment.md)
-
-1. [Validation & Verification](./docs/deployment.md#deployment-validation--verification)
-
-1. [Admin Functions](./docs/admin-functions.md)
-
-1. [CosmosDB, Kusto Functions, Views and Queries](./docs/data-explorer-functions-views-queries.md)
-
-1. [Configuration Settings](./docs/function-configuration-settings.md)
-
-1. [Multi Tenant](./docs/multi-tenant-deployment.md)
-
-1. [Troubleshooting](./docs/troubleshooting.md)
+[Documentation](../../wiki)
 
 ## Contributing
 

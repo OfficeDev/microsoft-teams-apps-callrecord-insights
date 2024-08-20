@@ -41,9 +41,10 @@ namespace CallRecordInsights.Extensions
             this IServiceCollection services,
             string sectionName = "GraphSubscription")
         {
-            return services.AddMicrosoftGraphAsApplication()
+            return services
                 .AddScoped(serviceProvider => new CallRecordsGraphOptions(
                                serviceProvider.GetRequiredService<IConfiguration>().GetSection(sectionName)))
+                .AddMicrosoftGraphAsApplication()
                 .AddScoped<ICallRecordsGraphContext,CallRecordsGraphContext>();
         }
 
@@ -66,7 +67,6 @@ namespace CallRecordInsights.Extensions
                 );
         }
 
-
         /// <summary>
         /// Adds the <see cref="GraphServiceClient"/> to the service collection using the <see cref="AzureIdentityMultiTenantGraphAuthenticationProvider"/>.
         /// </summary>
@@ -80,9 +80,12 @@ namespace CallRecordInsights.Extensions
             return services
                 .AddTokenCredential(sectionName)
                 .AddAzureMultiTenantGraphAuthenticationProvider()
-                .AddScoped<GraphServiceClient, GraphServiceClient>(sp => new GraphServiceClient(sp.GetRequiredService<IAuthenticationProvider>()));
+                .AddScoped(sp =>
+                    new GraphServiceClient(
+                        authenticationProvider: sp.GetRequiredService<IAuthenticationProvider>(),
+                        baseUrl: $"https://{sp.GetRequiredService<CallRecordsGraphOptions>().Endpoint}/v1.0"
+                    ));
         }
-
 
         /// <summary>
         /// Adds the <see cref="AzureIdentityMultiTenantGraphAuthenticationProvider"/> to the service collection.
@@ -94,7 +97,6 @@ namespace CallRecordInsights.Extensions
             return services
                 .AddScoped<IAuthenticationProvider, AzureIdentityMultiTenantGraphAuthenticationProvider>();
         }
-
 
         /// <summary>
         /// Adds the <see cref="TokenCredential"/> to the service collection using the <see cref="DefaultAzureCredential"/> 
@@ -118,6 +120,10 @@ namespace CallRecordInsights.Extensions
                 ManagedIdentityClientId = identityOptions?.UserAssignedManagedIdentityClientId,
                 TenantId = identityOptions?.TenantId,
             };
+
+            if (identityOptions?.Authority != null)
+                defaultAzureCredentialOptions.AuthorityHost = new Uri(identityOptions.Authority);
+
             defaultAzureCredentialOptions.AdditionallyAllowedTenants.Add("*");
 
             var clientCertificateCredentialOptions = new ClientCertificateCredentialOptions();
