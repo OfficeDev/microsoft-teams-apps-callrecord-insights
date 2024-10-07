@@ -11,7 +11,7 @@
     <PackageVersion Include="Microsoft.Identity.Web" Version="2.16.1" />
     <PackageVersion Include="Microsoft.Identity.Web.GraphServiceClient" Version="2.16.1" />
     <PackageVersion Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" />
-    <PackageVersion Include="Microsoft.NET.Sdk.Functions" Version="4.3.0" />
+    <PackageVersion Include="Microsoft.NET.Sdk.Functions" Version="4.6.0" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.6.0" />
   </ItemGroup>
 </Project>
