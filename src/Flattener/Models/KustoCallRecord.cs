@@ -73,6 +73,11 @@ namespace CallRecordInsights.Models
         public string? Organizer_SpoolApplicationInstanceDisplayName { get; set; }
         public Guid? Organizer_SpoolApplicationInstanceId { get; set; }
         public Guid? Organizer_SpoolApplicationInstanceTenantId { get; set; }
+        public string? Organizer_Id { get; set; }
+        public string? Organizer_UserPrincipalName { get; set; }
+        public string? Organizer_DisplayName { get; set; }
+        public Guid? Organizer_TenantId { get; set; }
+        public string? Organizer_IdType { get; set; }
         public string? Callee_UserDisplayName { get; set; }
         public Guid? Callee_UserId { get; set; }
         public Guid? Callee_UserTenantId { get; set; }
@@ -103,6 +108,11 @@ namespace CallRecordInsights.Models
         public string? Callee_SpoolApplicationInstanceDisplayName { get; set; }
         public Guid? Callee_SpoolApplicationInstanceId { get; set; }
         public Guid? Callee_SpoolApplicationInstanceTenantId { get; set; }
+        public string? Callee_Id { get; set; }
+        public string? Callee_UserPrincipalName { get; set; }
+        public string? Callee_DisplayName { get; set; }
+        public Guid? Callee_TenantId { get; set; }
+        public string? Callee_IdType { get; set; }
         public string? Callee_EndpointType { get; set; }
         public string? Callee_ProductFamily { get; set; }
         public string? Callee_Platform { get; set; }
@@ -191,6 +201,11 @@ namespace CallRecordInsights.Models
         public string? Caller_SpoolApplicationInstanceDisplayName { get; set; }
         public Guid? Caller_SpoolApplicationInstanceId { get; set; }
         public Guid? Caller_SpoolApplicationInstanceTenantId { get; set; }
+        public string? Caller_Id { get; set; }
+        public string? Caller_UserPrincipalName { get; set; }
+        public string? Caller_DisplayName { get; set; }
+        public Guid? Caller_TenantId { get; set; }
+        public string? Caller_IdType { get; set; }
         public string? Caller_EndpointType { get; set; }
         public string? Caller_ProductFamily { get; set; }
         public string? Caller_Platform { get; set; }
