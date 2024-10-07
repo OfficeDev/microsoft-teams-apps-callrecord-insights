@@ -52,6 +52,6 @@ namespace CallRecordInsights.Extensions
         }
 
         private const string APP_NAME = "CallRecordInsights";
-        private const string APP_VERSION = "1.1.0";
+        private const string APP_VERSION = "1.2.0";
     }
 }
