@@ -97,9 +97,22 @@ namespace CallRecordInsights.Extensions
         /// <returns></returns>
         public static T? DeserializeObject<T>(this string json) where T : IParsable, new()
         {
+            if (json == null)
+                return default;
+            return json.DeserializeObjectAsync<T>().ConfigureAwait(false).GetAwaiter().GetResult();
+        }
+
+        /// <summary>
+        /// Deserializes a given JSON string to a <see cref="IParsable"/> object in a synchronous manner.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="json"></param>
+        /// <returns></returns>
+        public static async Task<T?> DeserializeObjectAsync<T>(this string json) where T : IParsable, new()
+        {
             var parsableFactory = ParseNodeFactoryRegistry.DefaultInstance;
             using var stream = new MemoryStream(Encoding.UTF8.GetBytes(json));
-            var rootNode = parsableFactory.GetRootParseNode(ContentType, stream);
+            var rootNode = await parsableFactory.GetRootParseNodeAsync(ContentType, stream);
             return rootNode.GetObjectValue((IParseNode item) => new T());
         }
 
@@ -111,9 +124,22 @@ namespace CallRecordInsights.Extensions
         /// <returns></returns>
         public static IEnumerable<T> DeserializeCollection<T>(this string json) where T : IParsable, new()
         {
+            if (json == null)
+                return [];
+            return json.DeserializeCollectionAsync<T>().ConfigureAwait(false).GetAwaiter().GetResult();
+        }
+
+        /// <summary>
+        /// Deserializes a given JSON string to a <see cref="IParsable"/> object.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="json"></param>
+        /// <returns></returns>
+        public static async Task<IEnumerable<T>> DeserializeCollectionAsync<T>(this string json) where T : IParsable, new()
+        {
             var parsableFactory = ParseNodeFactoryRegistry.DefaultInstance;
             using var stream = new MemoryStream(Encoding.UTF8.GetBytes(json));
-            var rootNode = parsableFactory.GetRootParseNode(ContentType, stream);
+            var rootNode = await parsableFactory.GetRootParseNodeAsync(ContentType, stream);
             return rootNode.GetCollectionOfObjectValues((IParseNode item) => new T());
         }
 
