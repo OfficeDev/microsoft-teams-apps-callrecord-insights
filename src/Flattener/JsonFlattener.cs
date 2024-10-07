@@ -61,8 +61,9 @@ namespace CallRecordInsights.Flattener
 
             foreach (var kvp in _configuration)
             {
-                expanded[kvp.Key] = jObject.SelectTokens(kvp.Value).ToList();
-                foreach (var node in expanded[kvp.Key])
+                var tokens = jObject.SelectTokens(kvp.Value).ToList();
+                expanded[kvp.Key] = tokens;
+                foreach (var node in tokens)
                 {
                     if (node is null) continue;
                     potentialGroupingPaths.Add(node.GetPath().GetClosestExpansion().ToString());
@@ -71,7 +72,6 @@ namespace CallRecordInsights.Flattener
 
             foreach (var path in potentialGroupingPaths)
             {
-                //if (potentialGroupingPaths.Any(c => c != path && c.StartsWith(path)))
                 if (potentialGroupingPaths.Any(c => path.IsParentOf(c)))
                     continue;
 
