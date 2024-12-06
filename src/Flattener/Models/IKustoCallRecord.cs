@@ -72,6 +72,11 @@ namespace CallRecordInsights.Models
         string? Organizer_SpoolApplicationInstanceDisplayName { get; set; }
         Guid? Organizer_SpoolApplicationInstanceId { get; set; }
         Guid? Organizer_SpoolApplicationInstanceTenantId { get; set; }
+        string? Organizer_Id { get; set; }
+        string? Organizer_UserPrincipalName { get; set; }
+        string? Organizer_DisplayName { get; set; }
+        Guid? Organizer_TenantId { get; set; }
+        string? Organizer_IdType { get; set; }
         string? Callee_UserDisplayName { get; set; }
         Guid? Callee_UserId { get; set; }
         Guid? Callee_UserTenantId { get; set; }
@@ -102,6 +107,11 @@ namespace CallRecordInsights.Models
         string? Callee_SpoolApplicationInstanceDisplayName { get; set; }
         Guid? Callee_SpoolApplicationInstanceId { get; set; }
         Guid? Callee_SpoolApplicationInstanceTenantId { get; set; }
+        string? Callee_Id { get; set; }
+        string? Callee_UserPrincipalName { get; set; }
+        string? Callee_DisplayName { get; set; }
+        Guid? Callee_TenantId { get; set; }
+        string? Callee_IdType { get; set; }
         string? Callee_EndpointType { get; set; }
         string? Callee_ProductFamily { get; set; }
         string? Callee_Platform { get; set; }
@@ -190,6 +200,11 @@ namespace CallRecordInsights.Models
         string? Caller_SpoolApplicationInstanceDisplayName { get; set; }
         Guid? Caller_SpoolApplicationInstanceId { get; set; }
         Guid? Caller_SpoolApplicationInstanceTenantId { get; set; }
+        string? Caller_Id { get; set; }
+        string? Caller_UserPrincipalName { get; set; }
+        string? Caller_DisplayName { get; set; }
+        Guid? Caller_TenantId { get; set; }
+        string? Caller_IdType { get; set; }
         string? Caller_EndpointType { get; set; }
         string? Caller_ProductFamily { get; set; }
         string? Caller_Platform { get; set; }

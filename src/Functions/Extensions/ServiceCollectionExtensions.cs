@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
 using Microsoft.Identity.Abstractions;
+using Microsoft.Identity.Client;
 using Microsoft.Identity.Web;
 using Microsoft.Kiota.Abstractions.Authentication;
 using System;
@@ -167,11 +168,47 @@ namespace CallRecordInsights.Extensions
                                 c.SourceType switch
                                 {
                                     CredentialSource.SignedAssertionFromManagedIdentity =>
-                                        new ClientAssertionCredential(identityOptions.TenantId, identityOptions.ClientId, (c.CachedValue as ManagedIdentityClientAssertion).GetSignedAssertion, clientAssertionCredentialOptions),
+                                        new ClientAssertionCredential(
+                                            identityOptions.TenantId,
+                                            identityOptions.ClientId,
+                                            async cancellationToken =>
+                                            {
+                                                var assertion = c.CachedValue as ManagedIdentityClientAssertion;
+                                                var options = new AssertionRequestOptions()
+                                                {
+                                                    CancellationToken = cancellationToken,
+                                                };
+                                                return await assertion.GetSignedAssertionAsync(options);
+                                            },
+                                            clientAssertionCredentialOptions),
                                     CredentialSource.SignedAssertionFilePath =>
-                                        new ClientAssertionCredential(identityOptions.TenantId, identityOptions.ClientId, (c.CachedValue as AzureIdentityForKubernetesClientAssertion).GetSignedAssertion, clientAssertionCredentialOptions),
+                                        new ClientAssertionCredential(
+                                            identityOptions.TenantId,
+                                            identityOptions.ClientId,
+                                            async cancellationToken =>
+                                            {
+                                                var assertion = c.CachedValue as AzureIdentityForKubernetesClientAssertion;
+                                                var options = new AssertionRequestOptions()
+                                                {
+                                                    CancellationToken = cancellationToken,
+                                                };
+                                                return await assertion.GetSignedAssertionAsync(options);
+                                            },
+                                            clientAssertionCredentialOptions),
                                     CredentialSource.SignedAssertionFromVault =>
-                                        new ClientAssertionCredential(identityOptions.TenantId, identityOptions.ClientId, (c.CachedValue as ClientAssertionProviderBase).GetSignedAssertion, clientAssertionCredentialOptions),
+                                        new ClientAssertionCredential(
+                                            identityOptions.TenantId,
+                                            identityOptions.ClientId,
+                                            async cancellationToken =>
+                                            {
+                                                var assertion = c.CachedValue as ClientAssertionProviderBase;
+                                                var options = new AssertionRequestOptions()
+                                                {
+                                                    CancellationToken = cancellationToken,
+                                                };
+                                                return await assertion.GetSignedAssertionAsync(options);
+                                            },
+                                            clientAssertionCredentialOptions),
                                     _ => throw new NotImplementedException(),
                                 },
                             _ => throw new NotImplementedException(),
@@ -183,7 +220,7 @@ namespace CallRecordInsights.Extensions
                 var credLoader = new DefaultCertificateLoader();
                 tokenCredentials.AddRange(identityOptions.ClientCertificates
                     .Where(c => credLoader.ShouldAddTokenCredential(c))
-                    .Select(c => new ClientCertificateCredential(identityOptions.TenantId, identityOptions.ClientId, c.Certificate)));
+                    .Select(c => new ClientCertificateCredential(identityOptions.TenantId, identityOptions.ClientId, c.Certificate, clientCertificateCredentialOptions)));
             }
 
             tokenCredentials.Add(new DefaultAzureCredential(defaultAzureCredentialOptions));

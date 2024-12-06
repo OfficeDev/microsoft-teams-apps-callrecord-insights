@@ -236,6 +236,16 @@ namespace CallRecordInsights.Extensions
                 if (parentSelectors[i] is not IArraySelector && childSelectors[i] is IArraySelector)
                     return false;
 
+                if (parentSelectors[i] is ArrayIndexSelector parentIndexSelector)
+                {
+                    if (childSelectors[i] is ArrayIndexSelector childIndexSelector && !parentIndexSelector.Equals(childIndexSelector))
+                        return false;
+
+                    if (childSelectors[i] is ArraySliceSelector childSliceSelector && 
+                        (childSliceSelector.Start.Value > parentIndexSelector.Index.Value || childSliceSelector.End.Value < parentIndexSelector.Index.Value))
+                        return false;
+                }
+
                 if (parentSelectors[i] is ObjectPropertySelector parentPropertySelector && childSelectors[i] is ObjectPropertySelector childPropertySelector
                     && !parentPropertySelector.Equals(childPropertySelector, comparisonType))
                     return false;
@@ -447,6 +457,23 @@ namespace CallRecordInsights.Extensions
         {
             return "[*]";
         }
+
+        public bool Equals(ArrayWildcardSelector? other)
+        {
+            return other is not null;
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj is not ArrayWildcardSelector other)
+                return false;
+            return Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            return 309278523; // "[*]".GetHashCode();
+        }
     }
 
     public class ArrayIndexSelector : IArraySelector
@@ -471,6 +498,25 @@ namespace CallRecordInsights.Extensions
         public override string ToString()
         {
             return AppendTo(new StringBuilder()).ToString();
+        }
+
+        public bool Equals(ArrayIndexSelector? other)
+        {
+            if (other is null)
+                return false;
+            return Index.Equals(other.Index);
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj is not ArrayIndexSelector other)
+                return false;
+            return Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            return Index.GetHashCode();
         }
     }
 
@@ -537,6 +583,25 @@ namespace CallRecordInsights.Extensions
 
             return new ArraySliceSelector(parts[0], parts[1], parts[2]!.Value);
         }
+    
+        public bool Equals(ArraySliceSelector? other)
+        {
+            if (other is null)
+                return false;
+            return Start.Equals(other.Start) && End.Equals(other.End) && Step == other.Step;
+        }
+
+        public override bool Equals(object? obj)
+        {
+            if (obj is not ArraySliceSelector other)
+                return false;
+            return Equals(other);
+        }
+
+        public override int GetHashCode()
+        {
+            return Start.GetHashCode() ^ End.GetHashCode() ^ Step.GetHashCode();
+        }
     }
 
     public class ObjectPropertySelector : ISelector
@@ -585,7 +650,7 @@ namespace CallRecordInsights.Extensions
 
         public override int GetHashCode()
         {
-            return base.GetHashCode();
+            return PropertyName.GetHashCode();
         }
 
         private static readonly char[] SpecialCharacters = new char[18] { '.', ' ', '\'', '/', '"', '[', ']', '(', ')', '\t', '\n', '\r', '\f', '\b', '\\', '\u0085', '\u2028', '\u2029' };

@@ -16,10 +16,10 @@ namespace CallRecordInsights.Flattener
         }
 
         /// <summary>
-        /// Get a new row with all columns set to null
+        /// Get a new row with all columns set to the same value as the parent, or null if missing.
         /// </summary>
-        /// <param name="parent"></param>
-        /// <returns></returns>
+        /// <param name="parent">The parent dictionary containing the column names and values.</param>
+        /// <returns>A new row dictionary with all columns set to the same value as the parent, or null if missing.</returns>
         private Dictionary<string, JsonNode?> GetNewRow(IDictionary<string, JsonNode?>? parent = default)
         {
             var row = new Dictionary<string, JsonNode?>();
@@ -38,8 +38,8 @@ namespace CallRecordInsights.Flattener
         /// <summary>
         /// Process the json string and return a list of dictionaries with the column names and values
         /// </summary>
-        /// <param name="jsonString"></param>
-        /// <returns></returns>
+        /// <param name="jsonString">The JSON string to process.</param>
+        /// <returns>A list of dictionaries with the column names and values.</returns>
         public IEnumerable<Dictionary<string, JsonNode?>> ProcessNode(string jsonString)
         {
             var jObject = JsonNode.Parse(jsonString, _configuration.Options);
@@ -49,96 +49,38 @@ namespace CallRecordInsights.Flattener
         /// <summary>
         /// Process the json node and return a list of dictionaries with the column names and values
         /// </summary>
-        /// <param name="jObject"></param>
-        /// <returns></returns>
+        /// <param name="jObject">The JSON node to process.</param>
+        /// <returns>A list of dictionaries with the column names and values.</returns>
         public IEnumerable<Dictionary<string, JsonNode?>> ProcessNode(JsonNode? jObject)
         {
             if (jObject == null)
-            {
-                return Enumerable.Empty<Dictionary<string, JsonNode?>>();
-            }
+                yield break;
 
-            var result = new List<Dictionary<string, JsonNode?>>();
-            var expanded = new Dictionary<string, List<JsonNode?>>();
-            var currentIndices = new Dictionary<string, int>();
+            Dictionary<string, List<JsonNode?>> expanded = [];
+            HashSet<string> potentialGroupingPaths = [];
+
             foreach (var kvp in _configuration)
             {
-                var columnName = kvp.Key;
-                var jsonPath = kvp.Value;
-                expanded[columnName] = jObject.SelectTokens(jsonPath).ToList();
-                currentIndices[columnName] = 0;
+                var tokens = jObject.SelectTokens(kvp.Value).ToList();
+                expanded[kvp.Key] = tokens;
+                foreach (var node in tokens)
+                {
+                    if (node is null) continue;
+                    potentialGroupingPaths.Add(node.GetPath().GetClosestExpansion().ToString());
+                }
             }
 
-            var expandableNodes = expanded.Where(kvp => _configuration[kvp.Key].IsExpandable());
-            var MaxDepth = expandableNodes?.Max(kvp => kvp.Value.FirstOrDefault()?.GetPath().LevelsOfExpansion() ?? 0) ?? 0;
-            var LeafNodes = expandableNodes?.Where(kvp => kvp.Value.FirstOrDefault()?.GetPath().LevelsOfExpansion() == MaxDepth)
-                .ToList();
-            if (LeafNodes is null || LeafNodes.Count == 0)
+            foreach (var path in potentialGroupingPaths)
             {
+                if (potentialGroupingPaths.Any(c => path.IsParentOf(c)))
+                    continue;
+
                 var row = GetNewRow();
                 foreach (var column in expanded.Keys)
-                {
-                    row[column] = expanded[column].FirstOrDefault();
-                }
-                result.Add(row);
-                return result;
-            }
-            var RowCount = LeafNodes.Max(kvp => kvp.Value?.Count ?? 0);
-            var nonLeafKeys = expanded.Keys.Except(LeafNodes.Select(kvp => kvp.Key)).ToList();
-            for (var i = 0; i < RowCount; i++)
-            {
-                var row = GetNewRow();
-                var leafPath = string.Empty;
-                foreach (var leaf in LeafNodes)
-                {
-                    JsonNode? value = default;
-                    if (leaf.Value.Count == RowCount)
-                    {
-                        value = leaf.Value[i];
-                        currentIndices[leaf.Key] = i;
-                    }
-                    else if (leaf.Value.Count > 0)
-                    {
-                        for (var j = currentIndices[leaf.Key]; j < leaf.Value.Count; j++)
-                        {
-                            var path = leaf.Value[j]?.GetPath();
-                            if (path is null)
-                                continue;
-                            if (path.IsRelativeOf(leafPath))
-                            {
-                                value = leaf.Value[j];
-                                currentIndices[leaf.Key] = j;
-                                break;
-                            }
-                        }   
-                    }
+                    row[column] = expanded[column].FirstOrDefault(v => v?.GetPath().IsRelativeOf(path) ?? false);
 
-                    row[leaf.Key] = value;
-
-                    if (value != default && leafPath == string.Empty && leaf.Value.Count > 0)
-                    {
-                        leafPath = value.GetPath().ToJsonPath().ToString();
-                    }
-                }
-                // TODO: Move this out of the for loop RowCount
-                foreach (var column in nonLeafKeys)
-                {
-                    for (var j = currentIndices[column]; j < expanded[column].Count; j++)
-                    {
-                        var path = expanded[column][j]?.GetPath();
-                        if (path is null)
-                            continue;
-                        if (path.IsRelativeOf(leafPath))
-                        {
-                            row[column] = expanded[column][j];
-                            currentIndices[column] = j;
-                            break;
-                        }
-                    }
-                }
-                result.Add(row);
+                yield return row;
             }
-            return result;
         }
     }
 }
