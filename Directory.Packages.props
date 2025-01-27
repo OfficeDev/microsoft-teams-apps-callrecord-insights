@@ -8,7 +8,7 @@
     <PackageVersion Include="Microsoft.Azure.WebJobs.Extensions.Storage.Blobs" Version="5.3.3" />
     <PackageVersion Include="Microsoft.Azure.WebJobs.Extensions.Storage.Queues" Version="5.3.3" />
     <PackageVersion Include="Microsoft.Graph" Version="5.65.0" />
-    <PackageVersion Include="Microsoft.Identity.Web" Version="3.5.0" />
+    <PackageVersion Include="Microsoft.Identity.Web" Version="3.6.2" />
     <PackageVersion Include="Microsoft.Identity.Web.GraphServiceClient" Version="3.5.0" />
     <PackageVersion Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" />
     <PackageVersion Include="Microsoft.NET.Sdk.Functions" Version="4.6.0" />
