@@ -3,7 +3,7 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
   <ItemGroup>
-    <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.46.0" />
+    <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.47.0" />
     <PackageVersion Include="Microsoft.Azure.WebJobs.Extensions.EventHubs" Version="6.3.5" />
     <PackageVersion Include="Microsoft.Azure.WebJobs.Extensions.Storage.Blobs" Version="5.3.3" />
     <PackageVersion Include="Microsoft.Azure.WebJobs.Extensions.Storage.Queues" Version="5.3.3" />
