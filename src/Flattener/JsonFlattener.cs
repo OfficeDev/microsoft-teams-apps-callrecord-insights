@@ -56,8 +56,8 @@ namespace CallRecordInsights.Flattener
             if (jObject == null)
                 yield break;
 
-            Dictionary<string, List<JsonNode?>> expanded = [];
-            HashSet<string> potentialGroupingPaths = [];
+            var expanded = new Dictionary<string, List<JsonNode?>>();
+            var potentialGroupingPaths = new HashSet<string>();
 
             foreach (var kvp in _configuration)
             {
