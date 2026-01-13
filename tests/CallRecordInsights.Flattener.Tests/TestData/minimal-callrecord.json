@@ -1,0 +1,114 @@
+{
+  "id": "00000000-0000-0000-0000-000000000001",
+  "version": 1,
+  "type": "groupCall",
+  "modalities": ["audio", "video"],
+  "lastModifiedDateTime": "2026-01-13T10:00:00Z",
+  "startDateTime": "2026-01-13T09:00:00Z",
+  "endDateTime": "2026-01-13T09:30:00Z",
+  "joinWebUrl": "https://teams.microsoft.com/l/meetup-join/test",
+  "organizer": {
+    "user": {
+      "id": "00000000-0000-0000-0000-000000000010",
+      "displayName": "Test Organizer",
+      "tenantId": "00000000-0000-0000-0000-000000000020"
+    }
+  },
+  "sessions": [
+    {
+      "id": "00000000-0000-0000-0000-000000000100",
+      "modalities": ["audio", "video"],
+      "startDateTime": "2026-01-13T09:00:00Z",
+      "endDateTime": "2026-01-13T09:30:00Z",
+      "failureInfo": {
+        "stage": null,
+        "reason": null
+      },
+      "caller": {
+        "identity": {
+          "user": {
+            "id": "00000000-0000-0000-0000-000000000030",
+            "displayName": "Test Caller",
+            "tenantId": "00000000-0000-0000-0000-000000000020"
+          }
+        }
+      },
+      "callee": {
+        "identity": {
+          "user": {
+            "id": "00000000-0000-0000-0000-000000000040",
+            "displayName": "Test Callee",
+            "tenantId": "00000000-0000-0000-0000-000000000020"
+          }
+        }
+      },
+      "segments": [
+        {
+          "id": "00000000-0000-0000-0000-000000000200",
+          "startDateTime": "2026-01-13T09:00:00Z",
+          "endDateTime": "2026-01-13T09:30:00Z",
+          "caller": {
+            "identity": {
+              "user": {
+                "id": "00000000-0000-0000-0000-000000000030",
+                "displayName": "Test Caller"
+              }
+            },
+            "userAgent": {
+              "headerValue": "Microsoft Teams/1.0",
+              "platform": "Windows",
+              "productFamily": "Teams"
+            }
+          },
+          "callee": {
+            "identity": {
+              "user": {
+                "id": "00000000-0000-0000-0000-000000000040",
+                "displayName": "Test Callee"
+              }
+            },
+            "userAgent": {
+              "headerValue": "Microsoft Teams/1.0",
+              "platform": "Windows",
+              "productFamily": "Teams"
+            }
+          },
+          "media": [
+            {
+              "label": "main-audio",
+              "callerNetwork": {
+                "ipAddress": "192.168.1.100",
+                "subnet": "192.168.1.0/24",
+                "bandwidthLowEventRatio": 0.0,
+                "basicServiceSetIdentifier": "00:11:22:33:44:55"
+              },
+              "calleeNetwork": {
+                "ipAddress": "192.168.1.101",
+                "subnet": "192.168.1.0/24",
+                "bandwidthLowEventRatio": 0.0,
+                "basicServiceSetIdentifier": "00:11:22:33:44:56"
+              },
+              "streams": [
+                {
+                  "streamId": "1000",
+                  "streamDirection": "callerToCallee",
+                  "averageAudioNetworkJitter": "PT0.02S",
+                  "maxAudioNetworkJitter": "PT0.05S",
+                  "averageJitter": "PT0.02S",
+                  "maxJitter": "PT0.05S",
+                  "averagePacketLossRate": 0.01,
+                  "maxPacketLossRate": 0.05,
+                  "averageBandwidthEstimate": 50000,
+                  "averageRoundTripTime": "PT0.05S",
+                  "maxRoundTripTime": "PT0.1S",
+                  "packetUtilization": 1000,
+                  "wasMediaBypassed": false
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
