@@ -69,6 +69,21 @@ namespace CallRecordInsights.Extensions
         }
 
         /// <summary>
+        /// Adds the <see cref="Azure.Storage.Queues.QueueServiceClient"/> to the service collection for isolated worker model.
+        /// </summary>
+        /// <param name="services"></param>
+        /// <returns></returns>
+        public static IServiceCollection AddCallRecordsQueueContext(this IServiceCollection services)
+        {
+            return services.AddSingleton(serviceProvider =>
+            {
+                var connectionString = serviceProvider.GetRequiredService<IConfiguration>()
+                    .GetValue<string>("CallRecordsQueueConnection");
+                return new Azure.Storage.Queues.QueueServiceClient(connectionString);
+            });
+        }
+
+        /// <summary>
         /// Adds the <see cref="GraphServiceClient"/> to the service collection using the <see cref="AzureIdentityMultiTenantGraphAuthenticationProvider"/>.
         /// </summary>
         /// <param name="services"></param>

@@ -386,7 +386,7 @@ resource functionApp 'Microsoft.Web/sites@2022-09-01' = {
         { key: 'AzureWebJobsSecretStorageType', value: 'keyvault' }
         { key: 'AzureWebJobsSecretStorageKeyVaultUri', value: keyvault.properties.vaultUri }
         { key: 'FUNCTIONS_EXTENSION_VERSION', value: '~4' }
-        { key: 'FUNCTIONS_WORKER_RUNTIME', value: 'dotnet' }
+        { key: 'FUNCTIONS_WORKER_RUNTIME', value: 'dotnet-isolated' }
         { key: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING', value: '@Microsoft.KeyVault(VaultName=${keyvault.name};SecretName=${keyvault::storageAccountConnectionString.name})' }
         { key: 'WEBSITE_CONTENTSHARE', value: toLower(functionApp.name) }
         { key: 'SCM_COMMAND_IDLE_TIMEOUT', value: '1800' }
@@ -562,9 +562,19 @@ resource graphChangeTrackingAppRoleAssignment 'Microsoft.Authorization/roleAssig
   }
 }]
 
-resource graphChangeTrackingAppKeyVaultRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = [for role in neededRoles.graphChangeTrackingApp.KeyVault: {
-  scope: useSeparateKeyVaultForGraph ? graphKeyVault::graphEventHubConnectionString : keyvault::graphEventHubConnectionString
-  name: guid(graphChangeTrackingAppObjectId, role, resourceGroup().id)
+resource graphChangeTrackingAppKeyVaultRoleAssignmentSeparate 'Microsoft.Authorization/roleAssignments@2022-04-01' = [for role in neededRoles.graphChangeTrackingApp.KeyVault: if (useSeparateKeyVaultForGraph) {
+  scope: graphKeyVault::graphEventHubConnectionString
+  name: guid(graphChangeTrackingAppObjectId, role, 'separate', resourceGroup().id)
+  properties: {
+    roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', role)
+    principalId: graphChangeTrackingAppObjectId
+    principalType: 'ServicePrincipal'
+  }
+}]
+
+resource graphChangeTrackingAppKeyVaultRoleAssignmentShared 'Microsoft.Authorization/roleAssignments@2022-04-01' = [for role in neededRoles.graphChangeTrackingApp.KeyVault: if (!useSeparateKeyVaultForGraph) {
+  scope: keyvault::graphEventHubConnectionString
+  name: guid(graphChangeTrackingAppObjectId, role, 'shared', resourceGroup().id)
   properties: {
     roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', role)
     principalId: graphChangeTrackingAppObjectId

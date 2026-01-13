@@ -1,12 +1,11 @@
 ﻿using CallRecordInsights.Extensions;
 using CallRecordInsights.Services;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Kiota.Abstractions;
 using System;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -25,10 +24,10 @@ namespace CallRecordInsights.Functions.Functions
             this.logger = logger;
         }
 
-        [FunctionName(nameof(GetCallRecordAdminFunction))]
-        public async Task<IActionResult> RunAsync(
+        [Function(nameof(GetCallRecordAdminFunction))]
+        public async Task<HttpResponseData> RunAsync(
             [HttpTrigger(AuthorizationLevel.Admin, "get", Route = "callRecords/{callId}/{tenantId?}")]
-            HttpRequest request,
+            HttpRequestData request,
             Guid callId,
             string tenantId = null,
             CancellationToken cancellationToken = default)
@@ -39,7 +38,6 @@ namespace CallRecordInsights.Functions.Functions
                 nameof(RunAsync),
                 DateTime.UtcNow);
 
-            using var cancellationSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, request.HttpContext.RequestAborted);
             if (!string.IsNullOrEmpty(tenantId))
             {
                 try
@@ -47,22 +45,22 @@ namespace CallRecordInsights.Functions.Functions
                     var record = await callRecordsGraphContext.GetCallRecordFromTenantAsync(
                             callId.ToString(),
                             tenantId,
-                            cancellationSource.Token,
+                            cancellationToken,
                             logNotFoundErrors: true)
                         .ConfigureAwait(false);
 
                     var callRecordString = await record.SerializeAsStringAsync().ConfigureAwait(false);
 
-                    return new ContentResult()
-                    {
-                        Content = callRecordString,
-                        ContentType = "application/json",
-                        StatusCode = StatusCodes.Status200OK,
-                    };
+                    var response = request.CreateResponse(HttpStatusCode.OK);
+                    response.Headers.Add("Content-Type", "application/json");
+                    await response.WriteStringAsync(callRecordString);
+                    return response;
                 }
-                catch (ApiException ex) when (ex.ResponseStatusCode == (int)System.Net.HttpStatusCode.NotFound)
+                catch (ApiException ex) when (ex.ResponseStatusCode == (int)HttpStatusCode.NotFound)
                 {
-                    return new NotFoundObjectResult(new { error = new { message = $"Call Record Not Found for {callId} in tenant {tenantId}" } });
+                    var response = request.CreateResponse(HttpStatusCode.NotFound);
+                    await response.WriteAsJsonAsync(new { error = new { message = $"Call Record Not Found for {callId} in tenant {tenantId}" } });
+                    return response;
                 }
                 catch (ApiException ex)
                 {
@@ -71,10 +69,9 @@ namespace CallRecordInsights.Functions.Functions
                         "Error getting call record from tenant {tenantId}",
                         tenantId);
 
-                    var result = new ObjectResult(new { error = new { message = $"Error getting call record {callId} from tenant {tenantId}" } });
-                    result.StatusCode = StatusCodes.Status500InternalServerError;
-
-                    return result;
+                    var response = request.CreateResponse(HttpStatusCode.InternalServerError);
+                    await response.WriteAsJsonAsync(new { error = new { message = $"Error getting call record {callId} from tenant {tenantId}" } });
+                    return response;
                 }
                 catch (ArgumentException ex) when (ex.Message?.Contains("not configured", StringComparison.OrdinalIgnoreCase) == true)
                 {
@@ -82,31 +79,31 @@ namespace CallRecordInsights.Functions.Functions
                         ex,
                         "Error getting call record from tenant {tenantId}",
                         tenantId);
-                    return new BadRequestObjectResult(new { error = new { message = $"Tenant {tenantId} is not configured" } });
+                    var response = request.CreateResponse(HttpStatusCode.BadRequest);
+                    await response.WriteAsJsonAsync(new { error = new { message = $"Tenant {tenantId} is not configured" } });
+                    return response;
                 }
             }
             try
             {
                 var allRecords = await callRecordsGraphContext.GetCallRecordFromConfiguredTenantsAsync(
                         callId.ToString(),
-                        cancellationSource.Token)
+                        cancellationToken)
                     .ConfigureAwait(false);
 
                 var resultString = await allRecords.SerializeAsStringAsync().ConfigureAwait(false);
 
-                return new ContentResult()
-                {
-                    Content = resultString,
-                    ContentType = "application/json",
-                    StatusCode = StatusCodes.Status200OK,
-                };
+                var response = request.CreateResponse(HttpStatusCode.OK);
+                response.Headers.Add("Content-Type", "application/json");
+                await response.WriteStringAsync(resultString);
+                return response;
             }
             catch (Exception ex) when (ex is AggregateException or ApiException)
             {
                 logger.LogError(ex, "Error getting call record from configured tenants");
-                var result = new ObjectResult(new { error = new { message = $"Error getting call record from configured tenants" } });
-                result.StatusCode = StatusCodes.Status500InternalServerError;
-                return result;
+                var response = request.CreateResponse(HttpStatusCode.InternalServerError);
+                await response.WriteAsJsonAsync(new { error = new { message = $"Error getting call record from configured tenants" } });
+                return response;
             }
         }
     }

@@ -1,5 +1,5 @@
 using CallRecordInsights.Services;
-using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Threading;
@@ -20,7 +20,7 @@ namespace CallRecordInsights.Functions
             this.logger = logger;
         }
 
-        [FunctionName(nameof(AddOrRenewCallRecordsSubscriptionFunction))]
+        [Function(nameof(AddOrRenewCallRecordsSubscriptionFunction))]
         public async Task RunAsync(
             [TimerTrigger("%RenewSubscriptionScheduleCron%")]
             TimerInfo timerInfo,

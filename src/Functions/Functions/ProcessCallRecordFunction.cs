@@ -4,7 +4,7 @@ using CallRecordInsights.Flattener;
 using CallRecordInsights.Models;
 using CallRecordInsights.Services;
 using Microsoft.Azure.Cosmos;
-using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph.Models.CallRecords;
 using Microsoft.Kiota.Abstractions;
@@ -35,7 +35,7 @@ namespace CallRecordInsights.Functions
             this.logger = logger;
         }
 
-        [FunctionName(nameof(ProcessCallRecordFunction))]
+        [Function(nameof(ProcessCallRecordFunction))]
         public async Task RunAsync(
             [QueueTrigger("%CallRecordsToDownloadQueueName%", Connection = "CallRecordsQueueConnection")]
             string queuedCallId,

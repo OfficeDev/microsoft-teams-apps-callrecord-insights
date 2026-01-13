@@ -1,10 +1,8 @@
 ﻿using Azure;
 using Azure.Storage.Queues;
 using CallRecordInsights.Services;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Extensions.Http;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph.Models;
@@ -12,6 +10,7 @@ using Microsoft.Kiota.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Threading;
@@ -25,27 +24,28 @@ namespace CallRecordInsights.Functions
         private readonly IConfiguration configuration;
         private readonly ICallRecordsGraphContext callRecordsGraphContext;
         private readonly ICallRecordsDataContext callRecordsDataContext;
+        private readonly QueueServiceClient queueServiceClient;
         private readonly string eventHubName;
 
         public GetCallRecordInsightsHealthFunction(
                     ICallRecordsGraphContext callRecordsGraphContext,
                     ICallRecordsDataContext callRecordsDataContext,
                     IConfiguration configuration,
+                    QueueServiceClient queueServiceClient,
                     ILogger<GetCallRecordInsightsHealthFunction> logger)
         {
             this.callRecordsGraphContext = callRecordsGraphContext;
             this.callRecordsDataContext = callRecordsDataContext;
             this.configuration = configuration;
+            this.queueServiceClient = queueServiceClient;
             this.logger = logger;
             eventHubName = configuration.GetValue<string>("GraphNotificationEventHubName");
         }
 
-        [FunctionName(nameof(GetCallRecordInsightsHealthFunction))]
-        public async Task<IActionResult> RunAsync(
+        [Function(nameof(GetCallRecordInsightsHealthFunction))]
+        public async Task<HttpResponseData> RunAsync(
             [HttpTrigger(AuthorizationLevel.Admin, "get", Route = "health")]
-            HttpRequest request,
-            [Queue("%CallRecordsToDownloadQueueName%", Connection = "CallRecordsQueueConnection")]
-            QueueClient callRecordsToDownloadQueue,
+            HttpRequestData request,
             CancellationToken cancellationToken = default)
         {
             logger?.LogInformation(
@@ -54,18 +54,20 @@ namespace CallRecordInsights.Functions
                 nameof(RunAsync),
                 DateTime.UtcNow);
 
-            using var cancellationSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, request.HttpContext.RequestAborted);
+            // Get QueueClient from QueueServiceClient for isolated worker model
+            var queueName = configuration.GetValue<string>("CallRecordsToDownloadQueueName");
+            var callRecordsToDownloadQueue = queueServiceClient.GetQueueClient(queueName);
 
             try
             {
                 var EventHub = GetEventHubHealth();
-                var Cosmos = await GetCosmosHealthAsync(cancellationSource.Token).ConfigureAwait(false);
-                var DownloadQueue = await GetQueueHealthAsync(callRecordsToDownloadQueue, cancellationSource.Token).ConfigureAwait(false);
+                var Cosmos = await GetCosmosHealthAsync(cancellationToken).ConfigureAwait(false);
+                var DownloadQueue = await GetQueueHealthAsync(callRecordsToDownloadQueue, cancellationToken).ConfigureAwait(false);
 
                 IDictionary<string, Subscription> subs = default;
                 try
                 {
-                    subs = await callRecordsGraphContext.GetSubscriptionsFromConfiguredTenantsAsync(cancellationSource.Token)
+                    subs = await callRecordsGraphContext.GetSubscriptionsFromConfiguredTenantsAsync(cancellationToken)
                         .ConfigureAwait(false);
                 }
                 catch (Exception ex) when (
@@ -95,20 +97,21 @@ namespace CallRecordInsights.Functions
                 if (Subscriptions is null || Subscriptions.Count != callRecordsGraphContext.Tenants.Count)
                     UnhealthyServices.Add(nameof(Subscriptions));
 
-                return new OkObjectResult(
-                    new
-                    {
-                        Healthy = !UnhealthyServices.Any(),
-                        EventHub,
-                        Cosmos,
-                        DownloadQueue,
-                        Subscriptions,
-                        UnhealthyServices,
-                    });
+                var response = request.CreateResponse(HttpStatusCode.OK);
+                await response.WriteAsJsonAsync(new
+                {
+                    Healthy = !UnhealthyServices.Any(),
+                    EventHub,
+                    Cosmos,
+                    DownloadQueue,
+                    Subscriptions,
+                    UnhealthyServices,
+                });
+                return response;
             }
             catch (Exception ex) when (ex is TaskCanceledException or OperationCanceledException)
             {
-                return new StatusCodeResult(StatusCodes.Status503ServiceUnavailable);
+                return request.CreateResponse(HttpStatusCode.ServiceUnavailable);
             }
         }
 
@@ -150,21 +153,24 @@ namespace CallRecordInsights.Functions
                 return EventHub;
             }
 
-            var eventHubConfiguration = configuration.GetWebJobsConnectionSection("EventHubConnection");
-            if (!eventHubConfiguration.Exists() || (string.IsNullOrEmpty(eventHubConfiguration.Value) && eventHubConfiguration["fullyQualifiedNamespace"] == null))
+            // In isolated worker model, connection configuration is accessed differently
+            var eventHubConnectionString = configuration.GetValue<string>("EventHubConnection");
+            var eventHubNamespace = configuration.GetValue<string>("EventHubConnection__fullyQualifiedNamespace");
+
+            if (string.IsNullOrEmpty(eventHubConnectionString) && string.IsNullOrEmpty(eventHubNamespace))
             {
                 EventHub.Status = "No EventHub connection string or fullyQualifiedNamespace found in configuration.";
                 return EventHub;
             }
 
             EventHub.Healthy = true;
-            if (!string.IsNullOrEmpty(eventHubConfiguration.Value))
+            if (!string.IsNullOrEmpty(eventHubConnectionString))
             {
-                EventHub.Url = $"{GetValueFromConnectionString(eventHubConfiguration.Value, "Endpoint").TrimEnd('/')}/{eventHubName}";
+                EventHub.Url = $"{GetValueFromConnectionString(eventHubConnectionString, "Endpoint").TrimEnd('/')}/{eventHubName}";
                 return EventHub;
             }
 
-            EventHub.Url = $"sb://{eventHubConfiguration["fullyQualifiedNamespace"]}/{eventHubName}";
+            EventHub.Url = $"sb://{eventHubNamespace}/{eventHubName}";
             return EventHub;
         }
 
