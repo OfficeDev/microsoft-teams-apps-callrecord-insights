@@ -91,7 +91,7 @@ var configurations = {
         httpsOnly: true
         siteConfig: {
           alwaysOn: false
-          netFrameworkVersion: 'v6.0'
+          netFrameworkVersion: 'v10.0'
           ftpsState: 'Disabled'
         }
       }
@@ -147,7 +147,7 @@ var configurations = {
         httpsOnly: true
         siteConfig: {
           alwaysOn: false
-          netFrameworkVersion: 'v6.0'
+          netFrameworkVersion: 'v10.0'
           ftpsState: 'Disabled'
         }
       }
@@ -210,7 +210,7 @@ var configurations = {
         httpsOnly: true
         siteConfig: {
           alwaysOn: false
-          netFrameworkVersion: 'v6.0'
+          netFrameworkVersion: 'v10.0'
           ftpsState: 'Disabled'
         }
         virtualNetworkSubnetId: virtualNetwork::fnappSubnet.id
