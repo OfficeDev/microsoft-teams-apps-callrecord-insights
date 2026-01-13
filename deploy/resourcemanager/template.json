@@ -5,7 +5,7 @@
     "_generator": {
       "name": "bicep",
       "version": "0.39.26.7824",
-      "templateHash": "3565077033159323250"
+      "templateHash": "6250529056655100639"
     }
   },
   "parameters": {
@@ -647,7 +647,7 @@
             "_generator": {
               "name": "bicep",
               "version": "0.39.26.7824",
-              "templateHash": "3076884505945340631"
+              "templateHash": "4561757347526475827"
             }
           },
           "parameters": {
@@ -904,7 +904,7 @@
                     "httpsOnly": true,
                     "siteConfig": {
                       "alwaysOn": false,
-                      "netFrameworkVersion": "v6.0",
+                      "netFrameworkVersion": "v10.0",
                       "ftpsState": "Disabled"
                     }
                   }
@@ -959,7 +959,7 @@
                     "httpsOnly": true,
                     "siteConfig": {
                       "alwaysOn": false,
-                      "netFrameworkVersion": "v6.0",
+                      "netFrameworkVersion": "v10.0",
                       "ftpsState": "Disabled"
                     }
                   }
@@ -1020,7 +1020,7 @@
                     "httpsOnly": true,
                     "siteConfig": {
                       "alwaysOn": false,
-                      "netFrameworkVersion": "v6.0",
+                      "netFrameworkVersion": "v10.0",
                       "ftpsState": "Disabled"
                     },
                     "virtualNetworkSubnetId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', format('vnet-{0}', resourceGroup().name), 'fnapp-subnet')]"
