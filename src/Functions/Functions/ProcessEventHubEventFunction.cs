@@ -3,7 +3,8 @@ using Azure.Core.Serialization;
 using Azure.Messaging.EventHubs;
 using Azure.Storage.Queues;
 using CallRecordInsights.Models;
-using Microsoft.Azure.WebJobs;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -17,19 +18,23 @@ namespace CallRecordInsights.Functions
     public class ProcessEventHubEventFunction
     {
         private readonly ILogger<ProcessEventHubEventFunction> logger;
+        private readonly QueueServiceClient queueServiceClient;
+        private readonly IConfiguration configuration;
 
         public ProcessEventHubEventFunction(
-            ILogger<ProcessEventHubEventFunction> logger)
+            ILogger<ProcessEventHubEventFunction> logger,
+            QueueServiceClient queueServiceClient,
+            IConfiguration configuration)
         {
             this.logger = logger;
+            this.queueServiceClient = queueServiceClient;
+            this.configuration = configuration;
         }
 
-        [FunctionName(nameof(ProcessEventHubEventFunction))]
+        [Function(nameof(ProcessEventHubEventFunction))]
         public async Task RunAsync(
             [EventHubTrigger("%GraphNotificationEventHubName%", Connection = "EventHubConnection")]
             EventData[] eventDataBatch,
-            [Queue("%CallRecordsToDownloadQueueName%", Connection = "CallRecordsQueueConnection")]
-            QueueClient callRecordsToDownloadQueue,
             CancellationToken cancellationToken = default)
         {
             logger?.LogInformation(
@@ -41,6 +46,10 @@ namespace CallRecordInsights.Functions
             logger?.LogInformation(
                 "Trigger contains {EventCount} events",
                 eventDataBatch.Length);
+
+            // Get QueueClient from QueueServiceClient for isolated worker model
+            var queueName = configuration.GetValue<string>("CallRecordsToDownloadQueueName");
+            var callRecordsToDownloadQueue = queueServiceClient.GetQueueClient(queueName);
 
             var exceptions = new List<Exception>();
             foreach (var eventDataEntry in eventDataBatch)
