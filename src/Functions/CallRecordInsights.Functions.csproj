@@ -3,18 +3,24 @@
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <AzureFunctionsVersion>v4</AzureFunctionsVersion>
+    <OutputType>Exe</OutputType>
     <_FunctionsSkipCleanOutput>true</_FunctionsSkipCleanOutput>
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Azure Functions Isolated Worker Packages -->
+    <PackageReference Include="Microsoft.Azure.Functions.Worker" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Sdk" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.EventHubs" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Storage.Queues" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Http" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Extensions.Timer" />
 
+    <!-- Azure Service Packages -->
     <PackageReference Include="Microsoft.Azure.Cosmos" />
+    <PackageReference Include="Newtonsoft.Json" />
 
-    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.EventHubs" />
-    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Storage.Blobs">
-      <TreatAsUsed>true</TreatAsUsed>
-    </PackageReference>
-    <PackageReference Include="Microsoft.Azure.WebJobs.Extensions.Storage.Queues" />
+    <!-- Microsoft Graph & Identity Packages -->
     <PackageReference Include="Microsoft.Graph">
       <TreatAsUsed>true</TreatAsUsed>
     </PackageReference>
@@ -24,9 +30,6 @@
     <PackageReference Include="Microsoft.Identity.Web.GraphServiceClient">
       <TreatAsUsed>true</TreatAsUsed>
     </PackageReference>
-
-    <PackageReference Include="Microsoft.Azure.Functions.Extensions" />
-    <PackageReference Include="Microsoft.NET.Sdk.Functions" />
   </ItemGroup>
 
   <ItemGroup>
