@@ -17,7 +17,7 @@
 
     <!-- Microsoft Graph & Identity Packages -->
     <PackageVersion Include="Microsoft.Graph" Version="5.100.0" />
-    <PackageVersion Include="Microsoft.Identity.Web" Version="4.3.0" />
+    <PackageVersion Include="Microsoft.Identity.Web" Version="4.4.0" />
     <PackageVersion Include="Microsoft.Identity.Web.GraphServiceClient" Version="4.3.0" />
 
     <!-- Test Packages -->
