@@ -18,6 +18,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install Bicep CLI
+        run: az bicep install
+
       - name: Build ARM template from Bicep
         run: az bicep build --file deploy/bicep/deploy.bicep --outfile deploy/resourcemanager/template.json
 

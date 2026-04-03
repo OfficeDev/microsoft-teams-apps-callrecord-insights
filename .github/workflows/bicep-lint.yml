@@ -22,6 +22,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Install Bicep CLI
+        run: az bicep install
+
       - name: Lint Bicep files
         run: |
           failed=0
@@ -45,6 +48,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Install Bicep CLI
+        run: az bicep install
 
       - name: Rebuild ARM template from Bicep
         run: az bicep build --file deploy/bicep/deploy.bicep --outfile deploy/resourcemanager/template.generated.json
