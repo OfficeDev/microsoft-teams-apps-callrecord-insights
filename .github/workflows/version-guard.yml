@@ -29,14 +29,20 @@ jobs:
           pr_version=$(sed -n 's/.*<Version>\([^<]*\)<\/Version>.*/\1/p' Directory.Build.props)
           base_version=$(sed -n 's/.*<Version>\([^<]*\)<\/Version>.*/\1/p' base/Directory.Build.props 2>/dev/null || echo "")
 
-          if [ "$pr_version" != "$base_version" ]; then
-            echo "::notice::Version changed: ${base_version:-'(none)'} -> ${pr_version}"
+          if [ -z "$base_version" ]; then
+            echo "✅ Directory.Build.props is new in this PR — no version change to guard."
+          elif [ "$pr_version" != "$base_version" ]; then
+            echo "::notice::Version changed: ${base_version} -> ${pr_version}"
 
             # Read authorized users from CODEOWNERS on the base (main) branch
-            AUTHORIZED_USERS=$(sed -n 's/^[^#]*@//; s/ *@/ /gp' base/.github/CODEOWNERS 2>/dev/null | tr -s ' ' '\n' | sort -u | tr '\n' ' ')
+            # Extract @mentions, strip the @, deduplicate
+            AUTHORIZED_USERS=$(grep -v '^#' base/.github/CODEOWNERS 2>/dev/null | grep -oE '@[a-zA-Z0-9_-]+' | sed 's/@//' | sort -u | tr '\n' ' ')
             PR_AUTHOR="${{ github.event.pull_request.user.login }}"
 
-            if echo "$AUTHORIZED_USERS" | grep -qw "$PR_AUTHOR"; then
+            if [ -z "$AUTHORIZED_USERS" ]; then
+              echo "::error::Could not read code owners from base/.github/CODEOWNERS"
+              exit 1
+            elif echo "$AUTHORIZED_USERS" | grep -qw "$PR_AUTHOR"; then
               echo "✅ Version change authorized — PR author '$PR_AUTHOR' is a code owner."
             else
               echo "::error::Version changes to Directory.Build.props are restricted to code owners ($AUTHORIZED_USERS). PR author '$PR_AUTHOR' is not authorized."

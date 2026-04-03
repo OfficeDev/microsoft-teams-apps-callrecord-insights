@@ -111,7 +111,7 @@ public class GraphSdkPropertyDiscoveryTests
         {
             Assert.Fail(
                 $"Required Graph SDK property baseline file is missing: {baselinePath}. " +
-                $"Regenerate it by running {nameof(GenerateBaseline_IfMissing)} locally and commit the resulting baseline file.");
+                $"Regenerate it by running {nameof(GenerateBaseline_IfMissing)} locally with GENERATE_GRAPH_SDK_PROPERTY_BASELINE=true and commit the resulting baseline file.");
         }
 
         var baselineJson = File.ReadAllText(baselinePath);
