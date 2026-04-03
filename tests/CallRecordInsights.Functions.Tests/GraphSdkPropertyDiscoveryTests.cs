@@ -74,8 +74,22 @@ public class GraphSdkPropertyDiscoveryTests
     }
 
     [Fact]
+    [Trait("Category", "Manual")]
     public void GenerateBaseline_IfMissing()
     {
+        const string generateBaselineEnvironmentVariable = "GENERATE_GRAPH_SDK_PROPERTY_BASELINE";
+        var shouldGenerateBaseline = string.Equals(
+            Environment.GetEnvironmentVariable(generateBaselineEnvironmentVariable),
+            "true",
+            StringComparison.OrdinalIgnoreCase);
+
+        if (!shouldGenerateBaseline)
+        {
+            _output.WriteLine(
+                $"Skipping baseline generation. Set {generateBaselineEnvironmentVariable}=true to generate or regenerate GraphSdkPropertyBaseline.json.");
+            return;
+        }
+
         var baselinePath = GetBaselinePath();
         if (File.Exists(baselinePath))
         {
