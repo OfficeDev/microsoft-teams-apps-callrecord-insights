@@ -2,7 +2,6 @@ using FluentAssertions;
 using Microsoft.Graph.Models;
 using Microsoft.Graph.Models.CallRecords;
 using System.Collections.Generic;
-using System.Linq;
 
 // Disambiguate types that exist in both Microsoft.Graph.Models and Microsoft.Graph.Models.CallRecords
 using CallRecordEndpoint = Microsoft.Graph.Models.CallRecords.Endpoint;
