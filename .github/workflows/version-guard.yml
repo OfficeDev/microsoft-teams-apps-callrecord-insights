@@ -1,0 +1,46 @@
+name: Version Guard
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "Directory.Build.props"
+
+permissions:
+  contents: read
+
+jobs:
+  version-guard:
+    name: Check Version Change Authorization
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v4
+
+      - name: Checkout base branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.base.sha }}
+          path: base
+
+      - name: Check for version change
+        run: |
+          pr_version=$(grep -oP '(?<=<Version>)[^<]+' Directory.Build.props)
+          base_version=$(grep -oP '(?<=<Version>)[^<]+' base/Directory.Build.props 2>/dev/null || echo "")
+
+          if [ "$pr_version" != "$base_version" ]; then
+            echo "::notice::Version changed: ${base_version:-'(none)'} -> ${pr_version}"
+
+            AUTHORIZED_USERS="adthom Justw-MSFT"
+            PR_AUTHOR="${{ github.event.pull_request.user.login }}"
+
+            if echo "$AUTHORIZED_USERS" | grep -qw "$PR_AUTHOR"; then
+              echo "✅ Version change authorized — PR author '$PR_AUTHOR' is a code owner."
+            else
+              echo "::error::Version changes to Directory.Build.props are restricted to code owners ($AUTHORIZED_USERS). PR author '$PR_AUTHOR' is not authorized."
+              exit 1
+            fi
+          else
+            echo "✅ No version change detected."
+          fi

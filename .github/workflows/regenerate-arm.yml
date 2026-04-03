@@ -1,0 +1,40 @@
+name: Regenerate ARM Template
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "deploy/bicep/**"
+
+permissions:
+  contents: write
+
+jobs:
+  regenerate:
+    name: Rebuild ARM from Bicep
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build ARM template from Bicep
+        run: az bicep build --file deploy/bicep/deploy.bicep --outfile deploy/resourcemanager/template.json
+
+      - name: Check for changes
+        id: diff
+        run: |
+          if git diff --quiet deploy/resourcemanager/template.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Commit updated ARM template
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add deploy/resourcemanager/template.json
+          git commit -m "chore: regenerate ARM template from Bicep source"
+          git push
