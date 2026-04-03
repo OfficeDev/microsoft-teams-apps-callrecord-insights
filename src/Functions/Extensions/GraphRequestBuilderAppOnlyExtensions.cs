@@ -53,8 +53,8 @@ namespace CallRecordInsights.Extensions
         }
 
         private const string APP_NAME = "CallRecordInsights";
-        private static readonly string APP_VERSION = Assembly
-            .GetExecutingAssembly()
+        private static readonly string APP_VERSION = typeof(GraphRequestBuilderAppOnlyExtensions)
+            .Assembly
             .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
             ?.InformationalVersion ?? "0.0.0";
     }

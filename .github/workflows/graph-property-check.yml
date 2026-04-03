@@ -14,8 +14,8 @@ jobs:
   check-graph-properties:
     name: Detect New Graph SDK Properties
     runs-on: ubuntu-latest
-    # Only run when Microsoft.Graph package version changes
-    if: github.actor == 'dependabot[bot]'
+    # Only run for Dependabot pull requests updating the Microsoft.Graph package
+    if: github.actor == 'dependabot[bot]' && contains(github.event.pull_request.title, 'Microsoft.Graph')
 
     steps:
       - name: Checkout
@@ -34,7 +34,7 @@ jobs:
         continue-on-error: true
         run: |
           output=$(dotnet test tests/CallRecordInsights.Functions.Tests \
-            --filter "DetectNewGraphProperties" \
+            --filter "FullyQualifiedName~DetectNewGraphProperties" \
             --configuration Release \
             --no-build \
             --verbosity normal 2>&1)

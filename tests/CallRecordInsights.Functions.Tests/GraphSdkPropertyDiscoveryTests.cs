@@ -95,8 +95,9 @@ public class GraphSdkPropertyDiscoveryTests
         var baselinePath = GetBaselinePath();
         if (!File.Exists(baselinePath))
         {
-            _output.WriteLine("No baseline file found. Run GenerateBaseline_IfMissing first.");
-            return;
+            Assert.Fail(
+                $"Required Graph SDK property baseline file is missing: {baselinePath}. " +
+                $"Regenerate it by running {nameof(GenerateBaseline_IfMissing)} locally and commit the resulting baseline file.");
         }
 
         var baselineJson = File.ReadAllText(baselinePath);
