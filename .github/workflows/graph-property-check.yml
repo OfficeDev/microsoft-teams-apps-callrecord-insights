@@ -42,7 +42,7 @@ jobs:
           echo "$output"
 
           if echo "$output" | grep -q "NEW GRAPH SDK PROPERTIES DETECTED"; then
-            props=$(echo "$output" | sed -n '/NEW GRAPH SDK PROPERTIES DETECTED/,/==========/p' | grep '^[[:space:]]\+' | sed 's/^[[:space:]]*//')
+            props=$(echo "$output" | sed -n '/NEW GRAPH SDK PROPERTIES DETECTED/,/==========/p' | grep -E '^[[:space:]]+' | sed 's/^[[:space:]]*//')
             echo "new_properties<<EOF" >> "$GITHUB_OUTPUT"
             echo "$props" >> "$GITHUB_OUTPUT"
             echo "EOF" >> "$GITHUB_OUTPUT"

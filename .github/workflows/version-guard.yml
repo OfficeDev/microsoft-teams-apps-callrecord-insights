@@ -26,13 +26,14 @@ jobs:
 
       - name: Check for version change
         run: |
-          pr_version=$(grep -oP '(?<=<Version>)[^<]+' Directory.Build.props)
-          base_version=$(grep -oP '(?<=<Version>)[^<]+' base/Directory.Build.props 2>/dev/null || echo "")
+          pr_version=$(sed -n 's/.*<Version>\([^<]*\)<\/Version>.*/\1/p' Directory.Build.props)
+          base_version=$(sed -n 's/.*<Version>\([^<]*\)<\/Version>.*/\1/p' base/Directory.Build.props 2>/dev/null || echo "")
 
           if [ "$pr_version" != "$base_version" ]; then
             echo "::notice::Version changed: ${base_version:-'(none)'} -> ${pr_version}"
 
-            AUTHORIZED_USERS="adthom Justw-MSFT"
+            # Read authorized users from CODEOWNERS on the base (main) branch
+            AUTHORIZED_USERS=$(sed -n 's/^[^#]*@//; s/ *@/ /gp' base/.github/CODEOWNERS 2>/dev/null | tr -s ' ' '\n' | sort -u | tr '\n' ' ')
             PR_AUTHOR="${{ github.event.pull_request.user.login }}"
 
             if echo "$AUTHORIZED_USERS" | grep -qw "$PR_AUTHOR"; then
