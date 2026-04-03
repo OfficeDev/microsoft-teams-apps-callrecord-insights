@@ -66,7 +66,7 @@ public class GraphSdkPropertyDiscoveryTests
 
     private static string GetBaselinePath()
     {
-        // Walk up from bin/Debug/net10.0 to the test project root
+        // Walk up from bin/{Configuration}/{TFM} to the test project root
         var dir = AppContext.BaseDirectory;
         while (dir != null && !File.Exists(Path.Combine(dir, "CallRecordInsights.Functions.Tests.csproj")))
             dir = Directory.GetParent(dir)?.FullName;
