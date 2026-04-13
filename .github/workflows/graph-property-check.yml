@@ -1,0 +1,84 @@
+name: Graph SDK Property Check
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "Directory.Packages.props"
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check-graph-properties:
+    name: Detect New Graph SDK Properties
+    runs-on: ubuntu-latest
+    # Only run for Dependabot pull requests updating the Microsoft.Graph package
+    if: github.actor == 'dependabot[bot]' && contains(github.event.pull_request.title, 'Microsoft.Graph')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+
+      - name: Build tests
+        run: dotnet build tests/CallRecordInsights.Functions.Tests --configuration Release --verbosity quiet
+
+      - name: Run property discovery tests
+        id: discovery
+        run: |
+          exit_code=0
+          output=$(dotnet test tests/CallRecordInsights.Functions.Tests \
+            --filter "FullyQualifiedName~DetectNewGraphProperties" \
+            --configuration Release \
+            --no-build \
+            --verbosity normal 2>&1) || exit_code=$?
+
+          echo "$output"
+
+          if echo "$output" | grep -q "NEW GRAPH SDK PROPERTIES DETECTED"; then
+            props=$(echo "$output" | sed -n '/NEW GRAPH SDK PROPERTIES DETECTED/,/==========/p' | grep -E '^[[:space:]]+' | sed 's/^[[:space:]]*//')
+            echo "new_properties<<EOF" >> "$GITHUB_OUTPUT"
+            echo "$props" >> "$GITHUB_OUTPUT"
+            echo "EOF" >> "$GITHUB_OUTPUT"
+            echo "has_new_properties=true" >> "$GITHUB_OUTPUT"
+          elif [ $exit_code -ne 0 ]; then
+            echo "::error::Property discovery test failed unexpectedly (exit code $exit_code)"
+            exit $exit_code
+          else
+            echo "has_new_properties=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Open enhancement issue for new properties
+        if: steps.discovery.outputs.has_new_properties == 'true'
+        run: |
+          gh issue create \
+            --title "New Graph SDK properties available for CallRecord types" \
+            --label "enhancement" \
+            --body "$(cat <<'ISSUE_BODY'
+          ## New Graph SDK Properties Detected
+
+          A Graph SDK update has introduced new properties on types used by the flattener.
+          These may represent new data fields available from the Microsoft Teams Call Records API.
+
+          ### New Properties
+          \`\`\`
+          ${{ steps.discovery.outputs.new_properties }}
+          \`\`\`
+
+          ### Next Steps
+          1. Review the [Graph API CallRecords documentation](https://learn.microsoft.com/graph/api/resources/callrecords-api-overview)
+          2. Determine if any new properties should be added to `IKustoCallRecord` and the flattener config
+          3. If adding properties, update the baseline: delete `GraphSdkPropertyBaseline.json` and re-run tests
+          4. Update the Kusto table schema in `deploy/bicep/kustoScripts/CreateTable.kql`
+
+          *This issue was automatically created by the Graph SDK Property Check workflow.*
+          ISSUE_BODY
+          )"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

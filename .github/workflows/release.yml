@@ -1,0 +1,64 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Tag & Release
+    runs-on: ubuntu-latest
+    # Skip releases triggered by the bot's own version bump commits
+    if: "!contains(github.event.head_commit.message, '[skip-release]')"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Read version from Directory.Build.props
+        id: version
+        run: |
+          version=$(sed -n 's/.*<Version>\([^<]*\)<\/Version>.*/\1/p' Directory.Build.props)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Detected version: $version"
+
+      - name: Check if tag already exists
+        id: check-tag
+        run: |
+          if git rev-parse "v${{ steps.version.outputs.version }}" >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Create Release
+        if: steps.check-tag.outputs.exists == 'false'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: "v${{ steps.version.outputs.version }}"
+          name: "v${{ steps.version.outputs.version }}"
+          generate_release_notes: true
+
+      - name: Bump patch version for next development cycle
+        if: steps.check-tag.outputs.exists == 'false'
+        run: |
+          current="${{ steps.version.outputs.version }}"
+          IFS='.' read -r major minor patch <<< "$current"
+          next_patch=$((patch + 1))
+          next_version="${major}.${minor}.${next_patch}"
+          sed -i "s|<Version>${current}</Version>|<Version>${next_version}</Version>|" Directory.Build.props
+          echo "Bumped version: ${current} -> ${next_version}"
+
+      - name: Commit version bump
+        if: steps.check-tag.outputs.exists == 'false'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add Directory.Build.props
+          git commit -m "chore: bump version to next patch [skip-release]"
+          git push

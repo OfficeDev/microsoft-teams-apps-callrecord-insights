@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Support
+    url: https://github.com/OfficeDev/microsoft-teams-apps-callrecord-insights/blob/main/SUPPORT.md
+    about: For support questions, see our support guide.

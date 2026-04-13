@@ -1,11 +1,46 @@
 ---
 version: 2
 updates:
-- package-ecosystem: "nuget"
-  directory: "/"
-  schedule:
-    interval: "weekly"
-- package-ecosystem: "github-actions"
-  directory: "/"
-  schedule:
-    interval: "weekly"
+  - package-ecosystem: "nuget"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 10
+    reviewers:
+      - "adthom"
+      - "Justw-MSFT"
+    labels:
+      - "dependencies"
+      - "nuget"
+    commit-message:
+      prefix: "chore(nuget)"
+    groups:
+      microsoft:
+        patterns:
+          - "Microsoft.*"
+      testing:
+        patterns:
+          - "xunit*"
+          - "Microsoft.NET.Test.Sdk"
+          - "FluentAssertions"
+          - "Moq"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    reviewers:
+      - "adthom"
+      - "Justw-MSFT"
+    labels:
+      - "dependencies"
+      - "github-actions"
+    commit-message:
+      prefix: "chore(actions)"
+    groups:
+      actions:
+        patterns:
+          - "*"

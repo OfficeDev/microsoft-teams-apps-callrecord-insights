@@ -1,0 +1,70 @@
+name: Bicep Lint & ARM Validation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "deploy/bicep/**"
+  pull_request:
+    branches: [main]
+    paths:
+      - "deploy/bicep/**"
+
+permissions:
+  contents: read
+
+jobs:
+  bicep-lint:
+    name: Lint Bicep Templates
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Bicep CLI
+        run: az bicep install
+
+      - name: Lint Bicep files
+        run: |
+          failed=0
+          for file in $(find deploy/bicep -name '*.bicep' -type f); do
+            echo "::group::Linting $file"
+            if ! az bicep build --file "$file" --stdout > /dev/null; then
+              echo "::error file=$file::Bicep lint failed for $file"
+              failed=1
+            else
+              echo "OK: $file"
+            fi
+            echo "::endgroup::"
+          done
+          exit $failed
+
+  arm-template-check:
+    name: Check ARM Template Freshness
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Bicep CLI
+        run: az bicep install
+
+      - name: Rebuild ARM template from Bicep
+        run: az bicep build --file deploy/bicep/deploy.bicep --outfile deploy/resourcemanager/template.generated.json
+
+      - name: Compare with committed ARM template
+        run: |
+          if ! diff -q deploy/resourcemanager/template.json deploy/resourcemanager/template.generated.json > /dev/null 2>&1; then
+            echo "::error::deploy/resourcemanager/template.json is out of date with the Bicep source."
+            echo ""
+            echo "Run the following locally and commit the result:"
+            echo "  az bicep build --file deploy/bicep/deploy.bicep --outfile deploy/resourcemanager/template.json"
+            echo ""
+            diff --unified deploy/resourcemanager/template.json deploy/resourcemanager/template.generated.json || true
+            exit 1
+          else
+            echo "ARM template is up to date with Bicep source."
+          fi

@@ -1,0 +1,79 @@
+name: Bug Report
+description: Report a bug or unexpected behavior
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for reporting a bug. Please fill out the information below to help us investigate.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: A clear description of the bug.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro-steps
+    attributes:
+      label: Steps to Reproduce
+      description: Steps to reproduce the behavior.
+      placeholder: |
+        1. Deploy using 'deploy.ps1 -ResourceGroupName ... -SubscriptionId ...'
+        2. Configure '...'
+        3. Trigger call record processing
+        4. See error
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What you expected to happen.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened.
+    validations:
+      required: true
+
+  - type: input
+    id: dotnet-version
+    attributes:
+      label: .NET SDK Version
+      description: "Output of `dotnet --version`"
+      placeholder: "10.0.101"
+
+  - type: dropdown
+    id: deployment
+    attributes:
+      label: Deployment Method
+      options:
+        - deploy.ps1 (recommended)
+        - ARM Template (template.json) via Azure Portal
+        - Other
+
+  - type: dropdown
+    id: deployment-size
+    attributes:
+      label: Deployment Size
+      description: "The -DeploymentSize parameter used during deployment"
+      options:
+        - Production
+        - DevTest
+        - RestrictedProduction
+        - Not sure / N/A
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant Logs
+      description: Paste any relevant log output or error messages.
+      render: shell

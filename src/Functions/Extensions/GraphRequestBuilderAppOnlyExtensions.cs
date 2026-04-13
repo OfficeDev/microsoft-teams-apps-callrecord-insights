@@ -3,6 +3,7 @@ using Microsoft.Kiota.Abstractions;
 using Microsoft.Kiota.Http.HttpClientLibrary.Middleware.Options;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 namespace CallRecordInsights.Extensions
 {
@@ -52,6 +53,9 @@ namespace CallRecordInsights.Extensions
         }
 
         private const string APP_NAME = "CallRecordInsights";
-        private const string APP_VERSION = "2.0.0";
+        private static readonly string APP_VERSION = typeof(GraphRequestBuilderAppOnlyExtensions)
+            .Assembly
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()
+            ?.InformationalVersion ?? "0.0.0";
     }
 }
