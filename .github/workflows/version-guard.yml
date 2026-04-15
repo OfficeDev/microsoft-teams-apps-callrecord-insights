@@ -16,10 +16,10 @@ jobs:
 
     steps:
       - name: Checkout PR
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Checkout base branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           ref: ${{ github.event.pull_request.base.sha }}
           path: base
