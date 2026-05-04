@@ -4,24 +4,24 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- Azure Functions Isolated Worker Packages (.NET 10 compatible) -->
-    <PackageVersion Include="Microsoft.Azure.Functions.Worker" Version="2.51.0" />
+    <PackageVersion Include="Microsoft.Azure.Functions.Worker" Version="2.52.0" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.Sdk" Version="2.0.7" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.EventHubs" Version="6.5.0" />
-    <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Storage.Queues" Version="5.5.3" />
+    <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Storage.Queues" Version="5.5.4" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Http" Version="3.3.0" />
     <PackageVersion Include="Microsoft.Azure.Functions.Worker.Extensions.Timer" Version="4.3.1" />
 
     <!-- Azure Service Packages -->
-    <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.56.0" />
+    <PackageVersion Include="Microsoft.Azure.Cosmos" Version="3.59.0" />
     <PackageVersion Include="Newtonsoft.Json" Version="13.0.4" />
 
     <!-- Microsoft Graph & Identity Packages -->
-    <PackageVersion Include="Microsoft.Graph" Version="5.100.0" />
-    <PackageVersion Include="Microsoft.Identity.Web" Version="4.3.0" />
-    <PackageVersion Include="Microsoft.Identity.Web.GraphServiceClient" Version="4.3.0" />
+    <PackageVersion Include="Microsoft.Graph" Version="5.105.0" />
+    <PackageVersion Include="Microsoft.Identity.Web" Version="4.9.0" />
+    <PackageVersion Include="Microsoft.Identity.Web.GraphServiceClient" Version="4.9.0" />
 
     <!-- Test Packages -->
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.0.1" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.5.1" />
     <PackageVersion Include="xunit" Version="2.9.3" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
     <PackageVersion Include="FluentAssertions" Version="8.8.0" />
